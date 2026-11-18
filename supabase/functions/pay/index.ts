@@ -135,7 +135,7 @@ async function refund(c, b, req) {
       if (pay.status !== 'captured') throw new Fail(`Razorpay shows this payment as "${pay.status}", so it cannot be refunded.`, 409);
       rf = await rz(c, `/payments/${pay.id}/refund`, { amount: o.total * 100, speed: 'normal', notes: { order: String(o.number) } });
     }
-  } catch (e) { throw e instanceof Fail ? e : new Fail(e.message, 502); }
+  } catch (e) { console.error('pay refund', o.number, e.message); throw e instanceof Fail ? e : new Fail(e.message, 502); } // logged too, so it shows in the function logs
   try {
     await dbq(c, `orders?id=eq.${o.id}`, { method: 'PATCH', body: JSON.stringify({ refund_id: rf.id, refund_amount: o.total, refunded_at: new Date().toISOString() }) });
   } catch (e) { throw new Fail(`The refund went through at Razorpay (${rf.id}) but could not be saved here: ${e.message}. Press Refund again to record it.`, 502); }

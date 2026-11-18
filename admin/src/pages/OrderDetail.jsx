@@ -53,11 +53,13 @@ function Detail({ o, reload }) {
     toast(`Order #${o.number} is now ${status}`); reload();
   };
   const [refunding, setRefunding] = useState(false);
+  const [refundErr, setRefundErr] = useState('');
   const refund = async () => {
-    setBusy(true);
+    setBusy(true); setRefundErr('');
     const { error: e } = await supabase.functions.invoke('pay', { body: { action: 'refund', order_id: o.id } });
-    setBusy(false); setRefunding(false);
-    if (e) return toast(await fnError(e), 'err');
+    setBusy(false);
+    if (e) return setRefundErr(await fnError(e)); // stays on screen, inside the refund box, until the admin closes it
+    setRefunding(false);
     toast(`Refunded ${inr(o.total)}. It reaches the customer in 5 to 7 working days.`); reload();
   };
   const call = async (action) => {
@@ -211,7 +213,7 @@ function Detail({ o, reload }) {
               <div className="pay-act">
                 {o.status === 'cancelled' && <p className="callout" role="status">This order was cancelled after the customer paid. Refund them to finish.</p>}
                 {refunding
-                  ? <div className="confirm"><p>Refund {inr(o.total)} to the customer's original payment method? This cannot be undone.</p><div className="line line--start"><button className="btn btn--danger" onClick={refund} disabled={busy}>{busy ? 'Refunding…' : 'Yes, refund'}</button><button className="btn btn--ghost" onClick={() => setRefunding(false)} disabled={busy}>Keep</button></div></div>
+                  ? <div className="confirm"><p>Refund {inr(o.total)} to the customer's original payment method? This cannot be undone.</p>{refundErr && <p className="callout" role="alert"><strong>Razorpay said:</strong> {refundErr}</p>}<div className="line line--start"><button className="btn btn--danger" onClick={refund} disabled={busy}>{busy ? 'Refunding…' : refundErr ? 'Try again' : 'Yes, refund'}</button><button className="btn btn--ghost" onClick={() => { setRefunding(false); setRefundErr(''); }} disabled={busy}>{refundErr ? 'Close' : 'Keep'}</button></div></div>
                   : <button className="btn btn--line" onClick={() => setRefunding(true)}>Refund {inr(o.total)}</button>}
                 {o.status !== 'cancelled' && !refunding && <p className="hint">To cancel and refund: cancel the order first (it returns the stock), then refund.</p>}
               </div>
