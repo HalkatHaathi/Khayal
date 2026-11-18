@@ -47,7 +47,7 @@ async function rz(c, path, body, method = body ? 'POST' : 'GET') {
   const j = await r.json().catch(() => ({}));
   if (!r.ok) { // name the call, Razorpay's own code/field/reason, and the HTTP status: "invalid request" alone is impossible to act on
     const e = j?.error || {};
-    throw new Error(`Razorpay ${method} ${path.replace(/(pay|order)_\w+/g, '$1_…')}: ${e.description || 'no description'}${e.field ? ` (field: ${e.field})` : ''}${e.reason ? ` [${e.reason}]` : ''}${e.code ? ` {${e.code}}` : ''} HTTP ${r.status}`);
+    throw new Error(`Razorpay ${method} ${path.replace(/(pay|order)_\w+/g, '$1_…')}: ${e.description || 'no description'}${e.field ? ` (field: ${e.field})` : ''}${e.reason ? ` [${e.reason}]` : ''}${e.code ? ` {${e.code}}` : ''} HTTP ${r.status} ${JSON.stringify(j).slice(0, 400)}`); // the raw body too: Razorpay puts source/step/metadata there
   }
   return j;
 }
