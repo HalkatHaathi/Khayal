@@ -1,0 +1,184 @@
+import { useEffect, useRef, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import Carousel from '../components/Carousel';
+import Media from '../components/Media';
+import ProductCard from '../components/ProductCard';
+import { ArrowLeft, ArrowRight, Close, Minus, Plus } from '../components/Icons';
+import { SIZES } from '../catalog';
+import { useCatalog } from '../store';
+import { inr } from '../data';
+import { useCart } from '../cart';
+
+const WAIST = ['28', '30', '32', '34', '36'];
+const PANTS_ADD = 4500; // shortcut: flat add-on for the "with pants" set; move to per-product variant pricing with the backend.
+const COPY = {
+  'Kurtas': 'A celebration of timeless Indian craftsmanship, cut long with a relaxed drape and finished by hand. Made in small batches so every piece carries its own character.',
+  'Jackets': 'A statement layer built around surface work: structured shoulders, a relaxed body and details that reward a closer look. Made in small batches.',
+  'Sweatshirts & Hoodies': 'Heavyweight, brushed on the inside and finished with surface work that sets it apart. An oversized, easy fit made for layering.',
+  'Shirts': 'A relaxed shirt with a printed surface and a boxy, easy fit. Soft on the skin and built to be worn open or buttoned.',
+  'T-shirts': 'A heavyweight, boxy tee with an artwork print placed by hand. Cut oversized for an easy drop at the shoulder.',
+  'Pants': 'A wide, easy trouser with a high waist and a clean line from hip to hem.',
+};
+const CHART = [['S', 38, 28], ['M', 40, 29], ['L', 42, 30], ['XL', 44, 31], ['XXL', 46, 32]];
+
+function Gallery({ p }) {
+  const ref = useRef(null);
+  const [i, setI] = useState(0);
+  const slides = Array.from({ length: p.gallery?.length || 6 }, (_, k) => ({ src: p.gallery?.[k], tone: k % 2 ? p.alt : p.tone }));
+  const step = () => ref.current.firstElementChild.getBoundingClientRect().width;
+  const go = (d) => ref.current.scrollBy({ left: d * step(), behavior: 'smooth' });
+  useEffect(() => {
+    const el = ref.current;
+    const f = () => setI(Math.round(el.scrollLeft / step()));
+    el.addEventListener('scroll', f, { passive: true });
+    return () => el.removeEventListener('scroll', f);
+  }, []);
+  return (
+    <div className="pdp__gallery" role="region" aria-roledescription="carousel" aria-label={`${p.name} photos`}>
+      <div className="pdp__track" ref={ref}>
+        {slides.map((s, k) => (
+          <div key={k} className="pdp__slide"><Media src={s.src} tone={s.tone} kind={p.kind} alt={`${p.name}, view ${k + 1}`} /></div>
+        ))}
+      </div>
+      <div className="pdp__nav">
+        <button onClick={() => go(-1)} aria-label="Previous photo"><ArrowLeft size={16} /></button>
+        <button onClick={() => go(1)} aria-label="Next photo"><ArrowRight size={16} /></button>
+        <span aria-live="polite">{i + 1} / {slides.length}</span>
+      </div>
+    </div>
+  );
+}
+
+function SizeRow({ label, hint, values, value, onPick, disabled = () => false, chart }) {
+  return (
+    <div className="opt">
+      <div className="opt__head">
+        <p>{label}: <b>{value}</b> {hint && <em>{hint}</em>}</p>
+        {chart && <button className="link" onClick={chart}>Size chart</button>}
+      </div>
+      <div className="opt__row" role="radiogroup" aria-label={label}>
+        {values.map((v) => (
+          <button key={v} role="radio" aria-checked={value === v} disabled={disabled(v)}
+            className={`opt__btn ${value === v ? 'is-on' : ''}`} onClick={() => onPick(v)}>{v}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function Product({ onAdded, onCheckout }) {
+  const { slug } = useParams();
+  const cart = useCart();
+  const { catalog } = useCatalog();
+  const p = catalog.find((x) => x.slug === slug);
+  const isKurta = p?.type === 'Kurtas';
+  const isPants = p?.type === 'Pants';
+  const sizes = isPants ? WAIST : SIZES;
+  const has = (s) => p.sizes.includes(s);
+
+  const [set, setSet] = useState('Without Pants');
+  const [size, setSize] = useState(null);
+  const [pants, setPants] = useState('28');
+  const [qty, setQty] = useState(1);
+  const [more, setMore] = useState(false);
+  const chart = useRef(null);
+  const left = p ? (size ? (p.stock[size] ?? 0) : p.left) : 0; // stock is per size
+  useEffect(() => { if (qty > left) setQty(Math.max(1, left)); }, [left]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!p) return;
+    setSize(sizes.find(has) || null); setSet('Without Pants'); setPants('28'); setQty(1); setMore(false);
+    document.title = `${p.name} – KHAYAL`;
+  }, [slug]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!p) {
+    return (
+      <main className="empty"><p>Product not found</p><Link to="/collections/new-arrivals" className="btn-line">Continue shopping</Link></main>
+    );
+  }
+
+  const withPants = isKurta && set === 'With Pants';
+  const price = p.price + (withPants ? (p.pantsAddon ?? PANTS_ADD) : 0);
+  const canBuy = p.inStock && size;
+  const related = catalog.filter((x) => x.type === p.type && x.slug !== p.slug);
+  const relatedList = (related.length >= 4 ? related : [...related, ...catalog.filter((x) => x.type !== p.type && x.slug !== p.slug)]).slice(0, 8);
+
+  const item = () => ({
+    key: [p.slug, set, size, withPants && pants].join('|'), slug: p.slug, name: p.name, price, tone: p.tone, kind: p.kind, img: p.img,
+    qty, max: left,
+    opts: [...(isKurta ? [['Set', set]] : []), [isKurta ? 'Kurta Size' : isPants ? 'Waist' : 'Size', size], ...(withPants ? [['Pants Size', pants]] : [])],
+  });
+  const add = () => { cart.add(item()); onAdded(); };
+  const buyNow = () => { cart.add(item()); onCheckout(); };
+
+  return (
+    <main className="pdp">
+      <div className="pdp__top">
+        <Gallery key={p.slug} p={p} />
+        <section className="buy" aria-labelledby="buy-title">
+          <div className="buy__row"><h1 id="buy-title">{p.name}</h1><p>{inr(price).replace('Rs.', 'Rs.')}</p></div>
+          <p className="buy__craft">{p.craft.split('+')[0].trim()}</p>
+          <p className={`buy__desc ${more ? 'is-open' : ''}`}>
+            {p.desc || COPY[p.type]}{' '}
+            <button className="link" onClick={() => setMore(!more)} aria-expanded={more}>{more ? 'Show less' : 'Read more'}</button>
+          </p>
+          <p className="buy__model">Model: Model is 6 ft / Wearing size M</p>
+
+          {isKurta && (
+            <div className="opt">
+              <p className="opt__label">Set: <b>{set}</b></p>
+              <div className="opt__row" role="radiogroup" aria-label="Set">
+                {['Without Pants', 'With Pants'].map((s) => (
+                  <button key={s} role="radio" aria-checked={set === s} className={`opt__btn opt__btn--wide ${set === s ? 'is-on' : ''}`} onClick={() => setSet(s)}>{s}</button>
+                ))}
+              </div>
+            </div>
+          )}
+          <SizeRow label={isKurta ? 'Kurta Size' : isPants ? 'Waist' : 'Size'} hint="Regular Fit" values={sizes} value={size}
+            onPick={setSize} disabled={(s) => !p.inStock || !has(s)} chart={() => chart.current.showModal()} />
+          {withPants && <SizeRow label="Pants Size" hint="Regular Fit" values={WAIST} value={pants} onPick={setPants} />}
+
+          {!p.inStock
+            ? <p className="stock stock--out">Sold out</p>
+            : left <= 5 && <p className="stock">Only {left} left — No Restocking</p>}
+
+          <div className="buy__cta">
+            <div className="qty">
+              <button onClick={() => setQty(Math.max(1, qty - 1))} aria-label="Decrease quantity"><Minus size={14} /></button>
+              <span aria-live="polite">{qty}</span>
+              <button onClick={() => setQty(Math.min(left, qty + 1))} aria-label="Increase quantity" disabled={qty >= left}><Plus size={14} /></button>
+            </div>
+            <button className="btn-outline btn-outline--lg" onClick={add} disabled={!canBuy}>Add To Cart</button>
+          </div>
+          <button className="btn-solid" onClick={buyNow} disabled={!canBuy}>Shop Now</button>
+          <p className="buy__ship">Free shipping on orders 15,000+</p>
+        </section>
+      </div>
+
+      <div className="acc">
+        <details><summary>Details</summary>
+          <ul><li>{p.craft}</li><li>Oversized, relaxed fit</li><li>Made in India, in small batches</li></ul></details>
+        <details><summary>Delivery &amp; Returns</summary>
+          <p>Orders ship within 3–5 working days and arrive in 4–7 days across India. Unworn pieces with tags can be exchanged within 7 days of delivery. Limited-edition pieces are final sale.</p></details>
+        <details><summary>Wash &amp; Care</summary>
+          <p>Dry clean recommended. If washing at home, hand wash cold with a mild detergent, turn inside out and dry in shade. Do not bleach or tumble dry.</p></details>
+      </div>
+
+      <section className="related">
+        <h2>Related products</h2>
+        <Carousel label="Related products">
+          {relatedList.map((x) => <ProductCard key={x.slug} product={x} />)}
+        </Carousel>
+      </section>
+
+      <dialog ref={chart} className="chart" onClick={(e) => e.target === chart.current && chart.current.close()}>
+        <div className="chart__head"><h2>Size chart</h2><button onClick={() => chart.current.close()} aria-label="Close size chart"><Close size={18} /></button></div>
+        <table>
+          <thead><tr><th scope="col">Size</th><th scope="col">Chest (in)</th><th scope="col">Length (in)</th></tr></thead>
+          <tbody>{CHART.map(([s, c, l]) => <tr key={s}><th scope="row">{s}</th><td>{c}</td><td>{l}</td></tr>)}</tbody>
+        </table>
+        <p>Measurements are of the garment, laid flat. Placeholder values until the real chart is added.</p>
+      </dialog>
+    </main>
+  );
+}
