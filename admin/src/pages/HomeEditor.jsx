@@ -54,7 +54,7 @@ function Editor({ data }) {
   const patch = (id, k, v) => setSections((cur) => cur.map((s) => (s.id === id ? { ...s, [k]: v } : s)));
 
   const save = async () => {
-    const empty = sections.find((s) => s.type === 'products' && !s.collection);
+    const empty = sections.find((s) => s.type === 'products' && !s.collection && s.visible !== false); // a hidden block is never shown, so it may stay unfinished
     if (empty) { setOpen(empty.id); return toast(`Choose a collection for the product row "${empty.title || 'untitled'}", or remove it.`, 'err'); }
     const bad = sections.flatMap((s) => [s.link, ...(s.items || []).flatMap((x) => [x.to, x.link])]).some((l) => !okLink(l));
     if (bad) return toast('One of the links is not valid. Look for the red field.', 'err');
