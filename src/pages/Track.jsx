@@ -44,7 +44,7 @@ export default function Track() {
   const [num, setNum] = useState(sp.get('order') || '');
   const [phone, setPhone] = useState(saved);
   const [state, setState] = useState({ status: 'idle' }); // idle | loading | found | missing
-  useEffect(() => { document.title = 'Track your order – KHAYAL'; }, []);
+  useEffect(() => { document.title = 'Track your order – KHYAL'; }, []);
 
   const lookup = async (n, p) => {
     if (!supabase) return setState({ status: 'missing' });

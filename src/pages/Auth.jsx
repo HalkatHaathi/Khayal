@@ -36,7 +36,7 @@ export default function Auth({ mode }) {
   const [note, setNote] = useState('');
   const [fail, setFail] = useState('');
   const [busy, setBusy] = useState(false);
-  useEffect(() => { document.title = `${m.title} – KHAYAL`; setVals({}); setErrs({}); setNote(''); setFail(''); }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { document.title = `${m.title} – KHYAL`; setVals({}); setErrs({}); setNote(''); setFail(''); }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const submit = async (e) => {
     e.preventDefault();

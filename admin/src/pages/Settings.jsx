@@ -1,6 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Failed, PageHead, Switch, ok, useAsync, useToast } from '../lib/ui';
+
+/** Asks the `pay` function whether Razorpay is configured, and in which mode. null = unknown (not deployed yet). */
+function useRazorpay() {
+  const [h, setH] = useState(undefined);
+  useEffect(() => { supabase.functions.invoke('pay', { body: { action: 'health' } }).then(({ data, error }) => setH(error ? null : data)); }, []);
+  return h;
+}
 
 export default function Settings() {
   const { data, error, loading, reload } = useAsync(() => supabase.from('shop_settings').select('*').limit(1).maybeSingle().then(ok));
@@ -19,6 +26,7 @@ const NUM = [
 
 function Form({ s }) {
   const toast = useToast();
+  const rz = useRazorpay();
   const [f, setF] = useState(() => ({ ...s, ...Object.fromEntries(NUM.map(([k]) => [k, String(s[k])])) }));
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
@@ -28,7 +36,7 @@ function Form({ s }) {
     const bad = NUM.find(([k]) => !/^\d+$/.test(f[k]) || (k === 'max_qty_per_line' && Number(f[k]) < 1));
     if (bad) return setErr(`${bad[1]} must be a whole number${bad[0] === 'max_qty_per_line' ? ', 1 or more' : ', 0 or more'}.`);
     setErr(''); setBusy(true);
-    const patch = { cod_enabled: f.cod_enabled, ...(f.shiprocket_pickup ? { shiprocket_pickup: f.shiprocket_pickup.trim() } : {}), ...Object.fromEntries(NUM.map(([k]) => [k, Number(f[k])])) };
+    const patch = { cod_enabled: f.cod_enabled, online_payments_enabled: f.online_payments_enabled, ...(f.shiprocket_pickup ? { shiprocket_pickup: f.shiprocket_pickup.trim() } : {}), ...Object.fromEntries(NUM.map(([k]) => [k, Number(f[k])])) };
     const { data: saved, error: e } = await supabase.from('shop_settings').update(patch).eq('id', true).select();
     setBusy(false);
     if (e || !saved?.length) return setErr(e?.message || 'Nothing was saved. Sign in again and check this account is in the admins table.');
@@ -50,7 +58,10 @@ function Form({ s }) {
             <h2>Payment</h2>
             <div className="line line--gap"><span>Cash on delivery</span><Switch on={f.cod_enabled} onChange={(v) => setF({ ...f, cod_enabled: v })} label="Cash on delivery" /></div>
             <label className="lbl">{NUM[3][1]}<input inputMode="numeric" value={f.cod_fee} onChange={(e) => setF({ ...f, cod_fee: e.target.value })} /><small>{NUM[3][2]}</small></label>
-            <div className="line line--gap"><span>Online payment</span><span className="st st--mute">{s.online_payments_enabled ? 'On' : 'Off until GoKwik is connected'}</span></div>
+            <div className="line line--gap"><span>Online payment (Razorpay)</span><Switch on={f.online_payments_enabled} onChange={(v) => setF({ ...f, online_payments_enabled: v })} label="Online payment" disabled={!f.online_payments_enabled && !rz?.configured} /></div>
+            <p className="hint">{rz === undefined ? 'Checking Razorpay…' : rz === null ? 'The payment function is not deployed yet, so online payment cannot be turned on. See the README, Razorpay section.'
+              : !rz.configured ? 'Razorpay keys are missing. Set RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET and RAZORPAY_WEBHOOK_SECRET in Supabase, then reload.'
+              : rz.mode === 'test' ? 'Razorpay is connected in TEST mode: no real money moves. Switch the keys to live before taking real orders.' : 'Razorpay is connected in LIVE mode. Real money moves.'}</p>
           </section>
           <section className="grp">
             <h2>Shiprocket</h2>

@@ -1,6 +1,6 @@
-# Khayal storefront
+# Khyal storefront
 
-React + Vite storefront on Supabase (Postgres, auth, row-level security). Online payment (GoKwik) is not connected yet; cash on delivery works end to end.
+React + Vite storefront on Supabase (Postgres, auth, row-level security). Online payment runs on Razorpay; cash on delivery also works end to end.
 
 ## Run it
 
@@ -20,7 +20,7 @@ Without `.env.local` the site runs on the bundled sample catalogue and cannot pl
 | `VITE_SUPABASE_URL` | build-time, browser | no |
 | `VITE_SUPABASE_ANON_KEY` | build-time, browser (the `sb_publishable_…` key) | no, public by design |
 
-**Never** put the `sb_secret_…` / service-role key, the database password or any GoKwik secret in a `VITE_` variable: those are shipped to every visitor. Server-side secrets go in Supabase secrets (`supabase secrets set NAME=value`).
+**Never** put the `sb_secret_…` / service-role key, the database password or any Razorpay secret in a `VITE_` variable: those are shipped to every visitor. Server-side secrets go in Supabase secrets (`supabase secrets set NAME=value`).
 
 ## Database
 
@@ -36,6 +36,7 @@ Run in this order in the Supabase SQL Editor (each file is safe to re-run), then
 | `supabase/migrations/0007_content.sql` | `site_content` + `pages` tables, `site-images` bucket, starter page copy (admin phase 3) |
 | `supabase/migrations/0008_shipping.sql` | Shiprocket shipments, tracking events, `get_tracking()` for the order page, pickup-location setting |
 | `supabase/migrations/0009_tracking.sql` | `track_order()`: the public /track page (order number + mobile number) |
+| `supabase/migrations/0010_razorpay.sql` | Razorpay: payment columns, `apply_payment()` (what counts as paid), `get_order()` with hold time and refund state |
 | `supabase/migrations/0005_hardening.sql` | Size limits on user-written columns, locks the trigger function |
 | `supabase/seed.sql` | **Sample** catalogue, coupon `KHAYAL10`. Replaces the whole catalogue. Regenerate with `node scripts/gen-seed.mjs` |
 
@@ -77,6 +78,21 @@ supabase functions deploy parcel-updates --no-verify-jwt
 
 Delivered and in-transit updates move the order to shipped / delivered by themselves. Returns (RTO) and failed deliveries are only flagged: cancel the order in the admin when the parcel is back so its stock is restored. Cancelling a booked shipment is done in the Shiprocket panel for now.
 
+## Razorpay (online payments)
+
+How a payment is trusted: the browser never decides. The `pay` Edge Function (`supabase/functions/pay/index.ts`) asks **Razorpay's own API** whether the payment is captured and for exactly how much, and only then does the database mark the order paid (`apply_payment`, row-locked, safe to repeat). Two independent paths do this, so a closed browser tab never loses a payment: the browser's "I paid" call, and Razorpay's webhook. A payment that arrives for an order already cancelled or released, a second payment for an order already paid, or one with the wrong amount is **refunded automatically**. Unit tests: `node --test supabase/functions/pay/pay.test.mjs`.
+
+Set up (do it in **Test mode** first, nothing real moves):
+1. Run `supabase/migrations/0010_razorpay.sql` in the Supabase SQL Editor.
+2. Razorpay Dashboard (Test mode) → Account & Settings → **API Keys** → Generate Test Key. Keep the Key Id and Key Secret.
+3. Razorpay → **Webhooks** → Add: URL `https://<project-ref>.supabase.co/functions/v1/pay`, a secret you invent (any long random string), events **payment.captured**, **payment.authorized**, **order.paid**.
+4. Supabase → Edge Functions → Secrets: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` (the string from step 3).
+5. Supabase → Edge Functions → Deploy a new function named **pay**, paste `supabase/functions/pay/index.ts`, and turn **Verify JWT off** (Razorpay's webhook carries no Supabase login; every action authenticates itself).
+6. Admin → Settings → turn **Online payment** on. It shows TEST or LIVE so you always know which mode you are in.
+7. Place a test order on the storefront and pay with Razorpay's test card `4111 1111 1111 1111`, any future expiry, any CVV, OTP `1234` where asked (success); Razorpay's docs list cards and UPI IDs that fail.
+
+Going live: complete Razorpay's activation, generate **Live** keys, replace the three secrets (the webhook needs its own live-mode entry in the dashboard), redeploy nothing, and check the Settings page says LIVE. Refunds are in the admin order page (Cancel the order first so the stock returns, then Refund).
+
 ## Supabase dashboard settings to check before launch
 
 - Authentication → URL Configuration: Site URL = your domain; add `https://your-domain/**` and `http://localhost:5173/**` to Redirect URLs.
@@ -90,11 +106,10 @@ Static build: `npm run build`, publish `dist/`. Set the two `VITE_` variables on
 
 - **Vercel**: `vercel.json` handles routing and security headers.
 - **Netlify / Cloudflare Pages**: `public/_redirects` and `public/_headers` do the same.
-- The Content-Security-Policy appears in `vercel.json`, `public/_headers` and `vite.config.js` (for local preview). Keep the three in sync. When GoKwik is added, its script, frame and connect origins must be added to the policy.
+- The Content-Security-Policy appears in `vercel.json`, `public/_headers` and `vite.config.js` (for local preview). Keep the three in sync. Razorpay Checkout's origins are already in it.
 
 ## Known gaps
 
-- Online payment (GoKwik): waiting on their onboarding and docs. `shop_settings.online_payments_enabled` is `false`, and `mark_order_paid` / `mark_order_failed` are ready for their webhook.
 - No order emails yet (needs a mail provider). New orders are only visible in the `orders` table until the admin site exists.
 - No phone verification for guest COD orders; `create_order` limits 3 orders per phone per day as a stopgap.
 - No captcha on the newsletter, contact and sign-up forms; Supabase rate-limits auth, the other two are open to repeated submissions.

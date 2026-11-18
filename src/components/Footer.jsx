@@ -2,7 +2,7 @@ import { A } from '../content';
 import { useCatalog } from '../store';
 import { Facebook, Instagram, XIcon } from './Icons';
 
-const Stamp = () => <img className="stamp" src="/logo.webp" alt="Khayal" width="88" height="88" loading="lazy" />;
+const Stamp = () => <img className="stamp" src="/logo.webp" alt="Khyal" width="88" height="88" loading="lazy" />;
 
 export default function Footer() {
   const { content } = useCatalog();

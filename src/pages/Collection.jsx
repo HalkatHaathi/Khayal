@@ -70,7 +70,7 @@ export default function Collection() {
   if (f.min > 0 || f.max < PRICE_MAX) chips.push(['price', '', `₹${f.min} – ₹${f.max}`]);
   const chipToggle = (k, v) => (k === 'price' ? setPrice(0, PRICE_MAX) : toggle(k, v));
 
-  useEffect(() => { document.title = `${col.title} – KHAYAL`; }, [col.title]);
+  useEffect(() => { document.title = `${col.title} – KHYAL`; }, [col.title]);
 
   return (
     <main>

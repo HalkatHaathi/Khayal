@@ -8,7 +8,7 @@ import { useCatalog } from '../store';
 /** Wordmark at the top of the page; the stamp takes its place once the header folds on scroll. */
 export const Logo = () => (
   <>
-    <span className="logo__word">KHAYAL</span>
+    <span className="logo__word">KHYAL</span>
     <img className="logo__img" src="/logo.webp" alt="" aria-hidden="true" width="46" height="46" />
   </>
 );
@@ -38,7 +38,7 @@ export default function Header({ onMenu, onSearch, onCart, cartCount = 0 }) {
           <button onClick={onMenu} aria-label="Open menu"><Menu /></button>
           <button onClick={onSearch} aria-label="Search"><Search /></button>
         </div>
-        <Link to="/" className="logo" aria-label="Khayal home"><Logo /></Link>
+        <Link to="/" className="logo" aria-label="Khyal home"><Logo /></Link>
         <div className="hdr__side hdr__side--end">
           <Link to={user ? '/account' : '/account/login'} aria-label={user ? 'My account' : 'Sign in'}><User /></Link>
           <button onClick={onCart} aria-label={`Cart, ${cartCount} items`} className="hdr__bag">

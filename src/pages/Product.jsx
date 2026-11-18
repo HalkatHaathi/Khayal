@@ -88,7 +88,7 @@ export default function Product({ onAdded, onCheckout }) {
   useEffect(() => {
     if (!p) return;
     setSize(sizes.find(has) || null); setSet('Without Pants'); setPants('28'); setQty(1); setMore(false);
-    document.title = `${p.name} – KHAYAL`;
+    document.title = `${p.name} – KHYAL`;
   }, [slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!p) {

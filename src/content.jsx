@@ -18,7 +18,7 @@ export const DEFAULTS = {
       ] },
       { id: 'row-best', type: 'products', visible: true, collection: 'best-sellers', title: 'Best Sellers', sub: '', peek: true, upper: false },
       { id: 'full', type: 'fullscreen', visible: true, title: 'Made by hand', text: 'Block printing, hand embroidery and screen printing, done in small batches by the people who know the work best.', cta: 'Our craft', link: '/about', image: '' },
-      { id: 'insta', type: 'instagram', visible: true, title: '@KHAYALWEAR', link: 'https://instagram.com', items: ['#c9a27c', '#3b3a38', '#a9b8ae', '#7a2b2b', '#e1d8c9', '#46566f'].map((tone) => ({ image: '', link: '', tone })) },
+      { id: 'insta', type: 'instagram', visible: true, title: '@KHYALWEAR', link: 'https://instagram.com', items: ['#c9a27c', '#3b3a38', '#a9b8ae', '#7a2b2b', '#e1d8c9', '#46566f'].map((tone) => ({ image: '', link: '', tone })) },
       { id: 'story', type: 'story', visible: true, title: 'Rooted in Stories', text: 'Craft, culture, and contemporary expression—stitched together with purpose', cta: 'Discover our journey', link: '/about', image: '' },
       { id: 'news', type: 'newsletter', visible: true, kicker: 'Newsletter', title: 'Sign up', text: 'Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.', image: '' },
     ],
@@ -39,16 +39,16 @@ export const DEFAULTS = {
       { label: 'Sale', to: '/collections/sale' },
     ],
     footer: [
-      { title: 'Resources', links: [{ label: 'Track your order', to: '/track' }, { label: 'Blog', to: '/blog' }, { label: 'About KHAYAL', to: '/about' }, { label: 'Contact Us', to: '/contact' }] },
+      { title: 'Resources', links: [{ label: 'Track your order', to: '/track' }, { label: 'Blog', to: '/blog' }, { label: 'About KHYAL', to: '/about' }, { label: 'Contact Us', to: '/contact' }] },
       { title: 'Quick Links', links: [{ label: 'Shipping policy', to: '/policies/shipping' }, { label: 'Returns & Exchange', to: '/policies/returns' }, { label: 'Privacy Policy', to: '/policies/privacy' }, { label: 'Terms of Service', to: '/policies/terms' }] },
     ],
   },
   site: {
     announcement: { on: false, text: '', link: '' },
     whatsapp: '910000000000', // shortcut: placeholder, set the real number in the admin
-    email: 'hello@khayal.example',
+    email: 'hello@khyal.store',
     social: { instagram: 'https://instagram.com', facebook: 'https://facebook.com', x: 'https://x.com' },
-    copyright: '© K H A Y A L 2026',
+    copyright: '© K H Y A L 2026',
     tracking: { title: 'Track your order', intro: 'Enter your order number and the mobile number you used at checkout.', help: 'Questions about a parcel? Message us on WhatsApp and quote your order number.' },
   },
 };

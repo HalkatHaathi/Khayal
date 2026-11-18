@@ -8,7 +8,7 @@ import { useCart } from '../cart';
 
 export default function Cart({ onCheckout }) {
   const { items, count, subtotal, setQty, remove, ready, quoting } = useCart();
-  useEffect(() => { document.title = 'Your Shopping Cart – KHAYAL'; }, []);
+  useEffect(() => { document.title = 'Your Shopping Cart – KHYAL'; }, []);
 
   return (
     <main className="cartpg">

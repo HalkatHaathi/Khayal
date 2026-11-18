@@ -9,7 +9,7 @@ export default function Search() {
   const q = (sp.get('q') || '').trim();
   const { catalog } = useCatalog();
   const hits = search(catalog, q);
-  useEffect(() => { document.title = `Search – KHAYAL`; }, []);
+  useEffect(() => { document.title = `Search – KHYAL`; }, []);
   return (
     <main className="srch">
       <header className="srch__head">

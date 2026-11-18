@@ -21,7 +21,7 @@ const NEW = {
   hero: { cta: 'Shop now', label: 'Left title', link: '/', image: '', label2: 'Right title', link2: '/', image2: '' },
   products: { collection: '', title: 'New row', sub: '', peek: false, upper: false },
   banner: { title: 'New banner', sub: '', cta: 'Shop now', link: '/', image: '' },
-  categories: { items: [] }, fullscreen: { title: 'Our story', text: '', cta: '', link: '/', image: '' }, instagram: { title: '@KHAYALWEAR', link: 'https://instagram.com', items: [] },
+  categories: { items: [] }, fullscreen: { title: 'Our story', text: '', cta: '', link: '/', image: '' }, instagram: { title: '@KHYALWEAR', link: 'https://instagram.com', items: [] },
   story: { title: 'Our story', text: '', cta: 'Read more', link: '/about', image: '' },
   newsletter: { kicker: 'Newsletter', title: 'Sign up', text: '', image: '' },
 };

@@ -41,12 +41,12 @@ function Shell() {
     <div className="shell">
       <header className="mbar">
         <button className="icon-btn" onClick={() => setOpen(true)} aria-label="Open menu"><Icon.Menu /></button>
-        <span className="word">KHAYAL</span>
+        <span className="word">KHYAL</span>
         <span className="mbar__tag">Admin</span>
       </header>
       <div className={`scrim ${open ? 'is-open' : ''}`} onClick={() => setOpen(false)} />
       <aside className={`side ${open ? 'is-open' : ''}`}>
-        <div className="side__brand"><span className="word">KHAYAL</span><span className="side__tag">Admin</span></div>
+        <div className="side__brand"><span className="word">KHYAL</span><span className="side__tag">Admin</span></div>
         <nav aria-label="Main">
           {NAV.map(([group, items]) => (
             <div key={group}>
@@ -95,7 +95,7 @@ function Shell() {
 
 export default function App() {
   const { ready, user, admin, enabled } = useAuth();
-  if (!ready || (user && admin === null)) return <div className="boot" aria-busy="true"><span className="word">KHAYAL</span></div>;
+  if (!ready || (user && admin === null)) return <div className="boot" aria-busy="true"><span className="word">KHYAL</span></div>;
   if (!enabled || !user || admin !== true) return <Login />;
   return <Shell />;
 }

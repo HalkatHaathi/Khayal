@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { inr } from '../data';
+import { payOrder } from '../lib/razorpay';
 
 const SHIP = { awaiting_pickup: 'Ready for pickup', in_transit: 'On its way', out_for_delivery: 'Out for delivery', delivered: 'Delivered', attention: 'Delivery issue, we are on it', rto: 'Returning to us', cancelled: 'Shipment cancelled' };
 const day = (iso) => new Date(iso).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
@@ -19,7 +20,11 @@ export default function Order() {
   const [typed, setTyped] = useState('');
   const [state, setState] = useState({ status: 'idle' }); // idle | loading | found | missing
   const [track, setTrack] = useState(null);
-  useEffect(() => { document.title = 'Your order – KHAYAL'; }, []);
+  const [sp, setSp] = useSearchParams();
+  const [tick, setTick] = useState(0);              // bump to re-read the order
+  const [pay, setPay] = useState({ busy: false, msg: '' });
+  const started = useRef(false);
+  useEffect(() => { document.title = 'Your order – KHYAL'; }, []);
 
   useEffect(() => {
     if (!supabase) return;
@@ -31,7 +36,31 @@ export default function Order() {
       if (!error && data) supabase.rpc('get_tracking', { p_id: id, p_phone: phone }).then(({ data: t }) => { if (!stale) setTrack(t || null); }); // null before migration 0008 or before a parcel is booked
     });
     return () => { stale = true; };
-  }, [id, phone]);
+  }, [id, phone, tick]);
+
+  const o0 = state.status === 'found' ? state.o : null;
+  const payable = Boolean(o0) && o0.status === 'pending' && o0.payment_method === 'prepaid';
+  const expired = payable && o0.expires_at && new Date(o0.expires_at).getTime() < Date.now();
+
+  // after paying, the webhook may beat or trail the browser: look again a few times before telling the customer to wait
+  const settleWatch = useCallback(async () => {
+    for (let i = 0; i < 6; i++) { setTick((t) => t + 1); await new Promise((r) => setTimeout(r, 4000)); if (!document.getElementById('order-pending')) return true; }
+    return false;
+  }, []);
+  const startPay = useCallback(async () => {
+    setPay({ busy: true, msg: '' });
+    try {
+      const r = await payOrder(id, phone);
+      if (r.status === 'paid') { setPay({ busy: false, msg: '' }); setTick((t) => t + 1); return; }
+      if (r.status === 'refunded') { setPay({ busy: false, msg: 'Your payment reached us after the hold on your items ended, so it has been refunded in full. Please place the order again.' }); setTick((t) => t + 1); return; }
+      if (r.status === 'pending') { setPay({ busy: true, msg: 'Payment received. Confirming your order…' }); const done = await settleWatch(); setPay({ busy: false, msg: done ? '' : 'We have not been able to confirm your payment yet. If money left your account, your order will update within a few minutes; you do not need to pay again.' }); return; }
+      setPay({ busy: false, msg: '' }); setTick((t) => t + 1); // window closed: it may still have been paid in the meantime
+    } catch (e) { setPay({ busy: false, msg: e.message }); }
+  }, [id, phone, settleWatch]);
+  useEffect(() => { // arriving from checkout with ?pay=1: open the payment window once
+    if (!payable || expired || started.current || sp.get('pay') !== '1') return;
+    started.current = true; setSp({}, { replace: true }); startPay();
+  }, [payable, expired, sp, setSp, startPay]);
 
   const lookup = (e) => { e.preventDefault(); if (/^[6-9]\d{9}$/.test(typed)) setPhone(typed); };
 
@@ -69,6 +98,21 @@ export default function Order() {
           {track.events.length > 0 && <ol className="order__events">{track.events.map((e, k) => <li key={k}><span>{e.activity}{e.location && <em>{e.location}</em>}</span><time>{day(e.at)}</time></li>)}</ol>}
         </section>
       )}
+
+      {payable && (
+        <section className="order__pay" id="order-pending" aria-labelledby="op">
+          <h2 id="op">{expired ? 'This order has expired' : 'Complete your payment'}</h2>
+          {expired ? <p>Payment was not completed in time, so the items were released. Please place the order again.</p> : (
+            <>
+              <p>Total {inr(o.total)}. We are holding your items{o.expires_at ? ` until ${new Date(o.expires_at).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' })}` : ''}.</p>
+              <button className="btn-dark btn-dark--wide" onClick={startPay} disabled={pay.busy}>{pay.busy ? 'Opening payment…' : 'Pay now'}</button>
+            </>
+          )}
+          {pay.msg && <p className="auth__note" role="status">{pay.msg}</p>}
+        </section>
+      )}
+      {!payable && pay.msg && <p className="auth__note" role="status">{pay.msg}</p>}
+      {o.refunded && <p className="auth__note" role="status">This order has been refunded. The money reaches your account within 5 to 7 working days.</p>}
 
       <section className="order__sec" aria-labelledby="oi">
         <h2 id="oi">Items</h2>

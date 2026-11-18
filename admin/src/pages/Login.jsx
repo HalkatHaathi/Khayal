@@ -38,7 +38,7 @@ export default function Login() {
 
   return (
     <div className="auth-shell">
-      <header className="auth-bar"><span className="word word--lg">KHAYAL</span></header>
+      <header className="auth-bar"><span className="word word--lg">KHYAL</span></header>
       <main className="auth">
         <h1>Admin login</h1>
         <p className="auth__sub">Store management. Staff accounts only.</p>

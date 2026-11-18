@@ -38,7 +38,7 @@ export default function Messages() {
                 <div className="msg__body">
                   <p>{m.message}</p>
                   <div className="line">
-                    <a className="btn" href={`mailto:${m.email}?subject=${encodeURIComponent('Re: your message to Khayal')}`} onClick={() => !m.handled && patch(m, true)}>Reply by email</a>
+                    <a className="btn" href={`mailto:${m.email}?subject=${encodeURIComponent('Re: your message to Khyal')}`} onClick={() => !m.handled && patch(m, true)}>Reply by email</a>
                     <button className="btn btn--line" onClick={() => patch(m, !m.handled)}>{m.handled ? 'Mark as new' : 'Mark handled'}</button>
                     <button className="btn btn--ghost" onClick={() => del(m)}>Delete</button>
                   </div>

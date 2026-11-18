@@ -52,6 +52,14 @@ function Detail({ o, reload }) {
     if (e) return toast(e.message === 'invalid_transition' ? 'That status change is not allowed from here.' : e.message, 'err');
     toast(`Order #${o.number} is now ${status}`); reload();
   };
+  const [refunding, setRefunding] = useState(false);
+  const refund = async () => {
+    setBusy(true);
+    const { error: e } = await supabase.functions.invoke('pay', { body: { action: 'refund', order_id: o.id } });
+    setBusy(false); setRefunding(false);
+    if (e) return toast(await fnError(e), 'err');
+    toast(`Refunded ${inr(o.total)}. It reaches the customer in 5 to 7 working days.`); reload();
+  };
   const call = async (action) => {
     setBusy(true);
     const { data, error: e } = await supabase.functions.invoke('shiprocket-ship', { body: { action, order_id: o.id, ...(action === 'create' ? Object.fromEntries(Object.entries(box).map(([k, v]) => [k, Number(v)])) : {}) } });
@@ -70,7 +78,7 @@ function Detail({ o, reload }) {
   const addr = [a.name, a.line1, a.line2, `${a.city || ''}, ${a.state || ''} ${a.pincode || ''}`, a.phone && `Phone ${a.phone}`].filter(Boolean).join('\n');
   const STORE = import.meta.env.VITE_STORE_URL || 'http://localhost:5173';
   const link = `${STORE}/track?order=${o.number}`;
-  const note = `Hi ${(o.customer_name || '').split(' ')[0] || 'there'}, your Khayal order #${o.number} ${sh?.awb ? `is on its way with ${sh.courier || 'our courier'}` : 'is confirmed'}. Track it here: ${link}`;
+  const note = `Hi ${(o.customer_name || '').split(' ')[0] || 'there'}, your Khyal order #${o.number} ${sh?.awb ? `is on its way with ${sh.courier || 'our courier'}` : 'is confirmed'}. Track it here: ${link}`;
   const copyLink = () => navigator.clipboard?.writeText(link).then(() => toast('Tracking link copied'), () => toast('Could not copy', 'err'));
   const copy = () => navigator.clipboard?.writeText(addr).then(() => toast('Address copied'), () => toast('Could not copy', 'err'));
 
@@ -189,9 +197,13 @@ function Detail({ o, reload }) {
           </section>
           <section className="grp">
             <h2>Payment</h2>
-            <p>{o.payment_method === 'cod' ? 'Cash on delivery' : 'Online'}{o.paid_at ? ` · paid ${when(o.paid_at)}` : ' · not paid yet'}</p>
-            {o.gateway_ref && <p className="hint tnum">Ref {o.gateway_ref}</p>}
+            <p>{o.payment_method === 'cod' ? 'Cash on delivery' : 'Online (Razorpay)'}{o.paid_at ? ` · paid ${when(o.paid_at)}` : ' · not paid yet'}</p>
+            {o.rzp_payment_id && <p className="hint tnum">Payment {o.rzp_payment_id}</p>}
             {o.status === 'pending' && o.expires_at && <p className="hint">Stock is held until {when(o.expires_at)}, then released.</p>}
+            {o.refund_id ? <p className="hint">Refunded {inr(o.refund_amount)} on {when(o.refunded_at)}.</p>
+              : o.rzp_payment_id && (refunding
+                ? <div className="confirm"><p>Refund {inr(o.total)} to the customer's original payment method? This cannot be undone.</p><div className="line"><button className="btn btn--danger" onClick={refund} disabled={busy}>Yes, refund</button><button className="btn btn--ghost" onClick={() => setRefunding(false)}>Keep</button></div></div>
+                : <><button className="btn btn--line" onClick={() => setRefunding(true)}>Refund {inr(o.total)}</button>{o.status !== 'cancelled' && <p className="hint">To cancel and refund, cancel the order first (it returns the stock), then refund.</p>}</>)}
           </section>
         </aside>
       </div>

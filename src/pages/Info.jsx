@@ -8,9 +8,9 @@ import Stub from './Stub';
 // shortcut: placeholder copy. Replace with the brand's real story and legally reviewed policies before launch.
 const PAGES = {
   about: {
-    title: 'About Khayal',
+    title: 'About Khyal',
     body: [
-      ['Rooted in Stories', 'Khayal is a streetwear label built on craft, culture and contemporary expression, stitched together with purpose. Every piece starts with a story and an artisan who can tell it in cloth.'],
+      ['Rooted in Stories', 'Khyal is a streetwear label built on craft, culture and contemporary expression, stitched together with purpose. Every piece starts with a story and an artisan who can tell it in cloth.'],
       ['Made by hand', 'Block printing, hand embroidery and screen printing are done in small batches by the people who know the work best. That is why some pieces sell out and are never restocked.'],
     ],
   },
@@ -90,7 +90,7 @@ export default function Info({ page }) {
   const fb = page === 'contact' ? { title: 'Contact us', body: [['We read every message', 'Questions about an order, a fit or a collaboration: write to us and we will reply within two working days.']] } : PAGES[page];
   const c = db ? { title: db.title, body: db.body.map((x) => [x.h, x.t]) } : fb;
   const title = c?.title;
-  useEffect(() => { if (title) document.title = `${title} – KHAYAL`; }, [title]);
+  useEffect(() => { if (title) document.title = `${title} – KHYAL`; }, [title]);
   if (!c) return <Stub />;
   return (
     <main className="info">

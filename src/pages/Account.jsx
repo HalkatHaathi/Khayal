@@ -109,7 +109,7 @@ function Addresses({ user }) {
 export default function Account() {
   const auth = useAuth();
   const [name, setName] = useState('');
-  useEffect(() => { document.title = 'My account – KHAYAL'; }, []);
+  useEffect(() => { document.title = 'My account – KHYAL'; }, []);
   useEffect(() => {
     if (auth.user) supabase.from('profiles').select('full_name').maybeSingle().then(({ data }) => setName(data?.full_name || ''));
   }, [auth.user]);

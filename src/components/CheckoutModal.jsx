@@ -49,7 +49,7 @@ export default function CheckoutModal({ open, onClose }) {
     if (!open && d.open) d.close();
   }, [open]);
 
-  // online payment is off until the gateway is connected: start on cash on delivery
+  // online payment can be switched off in the admin: then start on cash on delivery
   useEffect(() => { if (settings && !online && payment === 'prepaid') setPayment('cod'); }, [settings, online, payment, setPayment]);
 
   // signed-in customers: prefill from their saved default address and profile
@@ -94,7 +94,7 @@ export default function CheckoutModal({ open, onClose }) {
     try { sessionStorage.setItem('khayal-order-phone', f.phone); } catch { /* guest lookup falls back to asking for the number */ }
     cart.clear();
     onClose();
-    nav(`/order/${data.id}`);
+    nav(`/order/${data.id}${payment === 'prepaid' ? '?pay=1' : ''}`); // online orders open the payment window there; the order already exists and holds the stock
   };
 
   const field = (k) => (
@@ -111,7 +111,7 @@ export default function CheckoutModal({ open, onClose }) {
     <dialog ref={ref} className="co" onClose={onClose} onClick={(e) => e.target === ref.current && onClose()} aria-label="Checkout">
       <div className="co__head">
         <button onClick={onClose} aria-label="Close checkout"><Close size={18} /></button>
-        <span className="co__word">KHAYAL</span>
+        <span className="co__word">KHYAL</span>
         <span className="co__sec">100% Secured Payment <Lock size={12} /></span>
       </div>
 
