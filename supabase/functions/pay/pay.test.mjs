@@ -17,10 +17,11 @@ function world(over = {}) {
     if (u.includes('api.razorpay.com')) {
       const path = u.split('/v1')[1];
       if (path === '/orders') { w.rzpOrders++; return res({ id: `order_${w.rzpOrders}`, amount: body.amount }); }
-      const pay = path.match(/^\/payments\/(\w+)(\/capture|\/refund)?$/);
+      const pay = path.match(/^\/payments\/(\w+)(\/capture|\/refunds?)?$/);
       if (!pay) return res({ error: { description: 'bad path' } }, 400);
       const p = w.payments[pay[1]]; if (!p) return res({ error: { description: 'no such payment' } }, 400);
       if (pay[2] === '/capture') { p.status = 'captured'; return res(p); }
+      if (pay[2] === '/refunds') return res({ items: p.status === 'refunded' ? [{ id: 'rfnd_old' }] : [] });
       if (pay[2] === '/refund') { if (p.status === 'refunded') return res({ error: { description: 'already refunded' } }, 400); p.status = 'refunded'; return res({ id: 'rfnd_1', amount: body.amount }); }
       return res(p);
     }
@@ -187,6 +188,28 @@ test('refund: an admin refunds the full amount once, and it is recorded', async 
   assert.equal(r.status, 200); assert.equal(j.amount, 6150); assert.equal(refunds(w)[0].body.amount, 615000); assert.equal(w.order.refund_id, 'rfnd_1'); assert.equal(w.order.refund_amount, 6150);
   const again = await post(w, { action: 'refund', order_id: OID }, { authorization: 'Bearer adminjwt' });
   assert.equal(again.status, 400); assert.equal(refunds(w).length, 1);
+});
+test('refund: Razorpay\'s real reason is shown to the admin, not a generic error', async () => {
+  const w = world({ admins: [{ user_id: 'admin-1' }] }); w.order.rzp_payment_id = 'pay_1'; w.payments.pay_1 = { ...captured(), status: 'failed' };
+  const r = await post(w, { action: 'refund', order_id: OID }, { authorization: 'Bearer adminjwt' });
+  assert.equal(r.status, 409); assert.match((await r.json()).error, /failed.*cannot be refunded/);
+  const real = w.fetch; w.payments.pay_1 = captured(); w.fetch = async (u, i = {}) => (String(u).endsWith('/refund') ? new Response(JSON.stringify({ error: { description: 'Insufficient balance' } }), { status: 400 }) : real(u, i));
+  const r2 = await post(w, { action: 'refund', order_id: OID }, { authorization: 'Bearer adminjwt' });
+  assert.equal(r2.status, 502); assert.match((await r2.json()).error, /Insufficient balance/);
+});
+test('refund: already refunded at Razorpay (earlier attempt or dashboard) is recorded, with no second refund', async () => {
+  const w = world({ admins: [{ user_id: 'admin-1' }] }); w.order.rzp_payment_id = 'pay_1'; w.payments.pay_1 = { ...captured(), status: 'refunded' };
+  const r = await post(w, { action: 'refund', order_id: OID }, { authorization: 'Bearer adminjwt' }); const j = await r.json();
+  assert.equal(r.status, 200); assert.equal(j.refund_id, 'rfnd_old'); assert.equal(w.order.refund_id, 'rfnd_old'); assert.equal(refunds(w).length, 0);
+});
+test('refund: if saving fails after Razorpay refunded, the admin is told and a retry records it', async () => {
+  const w = world({ admins: [{ user_id: 'admin-1' }] }); w.order.rzp_payment_id = 'pay_1'; w.payments.pay_1 = captured(); const real = w.fetch;
+  w.fetch = async (u, i = {}) => ((i.method === 'PATCH' && String(u).includes('/rest/v1/orders')) ? new Response('{"message":"db down"}', { status: 500 }) : real(u, i));
+  const r = await post(w, { action: 'refund', order_id: OID }, { authorization: 'Bearer adminjwt' });
+  assert.equal(r.status, 502); assert.match((await r.json()).error, /went through at Razorpay.*Press Refund again/);
+  w.fetch = real; // db is back: the retry finds the payment already refunded and records it, without refunding twice
+  const again = await post(w, { action: 'refund', order_id: OID }, { authorization: 'Bearer adminjwt' });
+  assert.equal(again.status, 200); assert.equal(refunds(w).length, 1); assert.equal(w.order.refund_id, 'rfnd_old'); // recorded from Razorpay's own refund list
 });
 test('refund: an order that was never paid online cannot be refunded', async () => {
   const w = world({ admins: [{ user_id: 'admin-1' }] });

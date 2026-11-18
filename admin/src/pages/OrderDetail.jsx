@@ -184,26 +184,38 @@ function Detail({ o, reload }) {
           )}
           <section className="grp">
             <h2>Customer</h2>
-            <p><Link to={`/customers/${o.phone}`} className="cell-link">{o.customer_name || 'Guest'}</Link></p>
-            <p className="tnum"><a href={`tel:${o.phone}`} className="ul">{o.phone}</a></p>
-            {o.email && <p><a href={`mailto:${o.email}`} className="ul">{o.email}</a></p>}
-            {!o.user_id && <p className="hint">Guest checkout, no account.</p>}
+            <dl className="kv">
+              <div><dt>Name</dt><dd><Link to={`/customers/${o.phone}`} className="cell-link">{o.customer_name || 'Guest'}</Link></dd></div>
+              <div><dt>Phone</dt><dd className="tnum"><a href={`tel:${o.phone}`} className="ul">{o.phone}</a></dd></div>
+              {o.email && <div><dt>Email</dt><dd><a href={`mailto:${o.email}`} className="ul">{o.email}</a></dd></div>}
+              <div><dt>Account</dt><dd>{o.user_id ? 'Signed in at checkout' : 'Guest checkout'}</dd></div>
+            </dl>
           </section>
           <section className="grp">
             <h2>Deliver to</h2>
             <address className="addr">{addr}</address>
-            <button className="btn btn--ghost btn--sm" onClick={copy}>Copy address</button>
+            <button className="btn btn--line btn--sm" onClick={copy}>Copy address</button>
             {o.is_gift && <p className="hint">Gift order{o.gift_note ? `: “${o.gift_note}”` : '.'}</p>}
           </section>
           <section className="grp">
             <h2>Payment</h2>
-            <p>{o.payment_method === 'cod' ? 'Cash on delivery' : 'Online (Razorpay)'}{o.paid_at ? ` · paid ${when(o.paid_at)}` : ' · not paid yet'}</p>
-            {o.rzp_payment_id && <p className="hint tnum">Payment {o.rzp_payment_id}</p>}
+            <dl className="kv">
+              <div><dt>Method</dt><dd>{o.payment_method === 'cod' ? 'Cash on delivery' : 'Online (Razorpay)'}</dd></div>
+              <div><dt>Status</dt><dd>{o.refund_id ? <Status tone="mute">Refunded</Status> : o.paid_at ? <Status tone="ok">Paid</Status> : <Status tone="warn">Not paid</Status>}</dd></div>
+              {o.paid_at && <div><dt>Paid on</dt><dd>{when(o.paid_at)}</dd></div>}
+              {o.rzp_payment_id && <div><dt>Reference</dt><dd className="tnum kv__ref">{o.rzp_payment_id}</dd></div>}
+              {o.refund_id && <div><dt>Refunded</dt><dd className="tnum">{inr(o.refund_amount)} on {when(o.refunded_at)}</dd></div>}
+            </dl>
             {o.status === 'pending' && o.expires_at && <p className="hint">Stock is held until {when(o.expires_at)}, then released.</p>}
-            {o.refund_id ? <p className="hint">Refunded {inr(o.refund_amount)} on {when(o.refunded_at)}.</p>
-              : o.rzp_payment_id && (refunding
-                ? <div className="confirm"><p>Refund {inr(o.total)} to the customer's original payment method? This cannot be undone.</p><div className="line"><button className="btn btn--danger" onClick={refund} disabled={busy}>Yes, refund</button><button className="btn btn--ghost" onClick={() => setRefunding(false)}>Keep</button></div></div>
-                : <><button className="btn btn--line" onClick={() => setRefunding(true)}>Refund {inr(o.total)}</button>{o.status !== 'cancelled' && <p className="hint">To cancel and refund, cancel the order first (it returns the stock), then refund.</p>}</>)}
+            {o.rzp_payment_id && !o.refund_id && (
+              <div className="pay-act">
+                {o.status === 'cancelled' && <p className="callout" role="status">This order was cancelled after the customer paid. Refund them to finish.</p>}
+                {refunding
+                  ? <div className="confirm"><p>Refund {inr(o.total)} to the customer's original payment method? This cannot be undone.</p><div className="line line--start"><button className="btn btn--danger" onClick={refund} disabled={busy}>{busy ? 'Refunding…' : 'Yes, refund'}</button><button className="btn btn--ghost" onClick={() => setRefunding(false)} disabled={busy}>Keep</button></div></div>
+                  : <button className="btn btn--line" onClick={() => setRefunding(true)}>Refund {inr(o.total)}</button>}
+                {o.status !== 'cancelled' && !refunding && <p className="hint">To cancel and refund: cancel the order first (it returns the stock), then refund.</p>}
+              </div>
+            )}
           </section>
         </aside>
       </div>

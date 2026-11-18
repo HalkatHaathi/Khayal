@@ -158,7 +158,7 @@ a.row:hover, button.row:hover { background: var(--wash); }
 .grp:last-child { border-bottom: 0; margin-bottom: 0; }
 .grp h2 { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 18px; }
 .grp h3 { font-size: 12px; font-weight: 500; letter-spacing: .04em; margin-bottom: 8px; }
-.grp .hint { margin-top: -8px; margin-bottom: 16px; }
+.grp > h2 + .hint { margin-top: -8px; margin-bottom: 16px; }
 .grp .chk + .hint, .grp .addsize + .hint { margin-top: 14px; }
 .danger h2 { color: var(--err); }
 .imgs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
@@ -274,6 +274,15 @@ a.row:hover, button.row:hover { background: var(--wash); }
 .imgfield__none { display: grid; place-items: center; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
 .imgfield div { display: flex; gap: 8px; flex-wrap: wrap; }
 @media (max-width: 700px) { .lrow { grid-template-columns: 1fr; gap: 0; } .lrow .imgs__act { margin-top: 0; justify-content: flex-start; margin-bottom: 18px; } .block__body { padding-left: 0; } }
+
+/* ---------- key/value rows (order sidebar) ---------- */
+.kv { margin: 0; display: grid; gap: 14px; }
+.kv > div { display: grid; grid-template-columns: 84px 1fr; gap: 12px; align-items: baseline; }
+.kv dt { font-size: 12px; color: var(--mute); letter-spacing: .02em; } .kv dd { margin: 0; font-size: 14px; line-height: 1.4; min-width: 0; overflow-wrap: anywhere; }
+.kv__ref { font-size: 12.5px; color: var(--mute); }
+.pay-act { margin-top: 22px; display: grid; gap: 14px; justify-items: start; } .pay-act .hint { margin: 0; } .pay-act .confirm { width: 100%; }
+.callout { background: #fbeceb; color: #8a2a20; font-size: 13px; line-height: 1.5; padding: 12px 14px; width: 100%; }
+.addr { margin-bottom: 14px; }
 
 /* ---------- shipment ---------- */
 .sum--left { margin: 0 0 16px; max-width: 420px; } .sum--left dd { text-align: right; }

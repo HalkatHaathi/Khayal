@@ -124,9 +124,22 @@ async function refund(c, b, req) {
   if (!o) throw new Fail('Order not found.', 404);
   if (!o.rzp_payment_id) throw new Fail('This order was not paid online.');
   if (o.refund_id) throw new Fail('This order has already been refunded.');
-  const r = await rz(c, `/payments/${o.rzp_payment_id}/refund`, { amount: o.total * 100, speed: 'normal', notes: { order: String(o.number) } });
-  await dbq(c, `orders?id=eq.${o.id}`, { method: 'PATCH', body: JSON.stringify({ refund_id: r.id, refund_amount: o.total, refunded_at: new Date().toISOString() }) });
-  return json({ refund_id: r.id, amount: o.total });
+  // Razorpay's own words are shown to the admin (they are not secrets); only customers get the generic message
+  let rf;
+  try {
+    const pay = await rz(c, `/payments/${encodeURIComponent(o.rzp_payment_id)}`);
+    if (pay.status === 'refunded' || (pay.amount_refunded || 0) >= pay.amount) { // already refunded at Razorpay (an earlier attempt, or from their dashboard): just record it
+      rf = (await rz(c, `/payments/${pay.id}/refunds`)).items?.[0];
+      if (!rf) throw new Fail('Razorpay says this payment was refunded, but returned no refund record. Check the Razorpay dashboard.', 502);
+    } else {
+      if (pay.status !== 'captured') throw new Fail(`Razorpay shows this payment as "${pay.status}", so it cannot be refunded.`, 409);
+      rf = await rz(c, `/payments/${pay.id}/refund`, { amount: o.total * 100, speed: 'normal', notes: { order: String(o.number) } });
+    }
+  } catch (e) { throw e instanceof Fail ? e : new Fail(e.message, 502); }
+  try {
+    await dbq(c, `orders?id=eq.${o.id}`, { method: 'PATCH', body: JSON.stringify({ refund_id: rf.id, refund_amount: o.total, refunded_at: new Date().toISOString() }) });
+  } catch (e) { throw new Fail(`The refund went through at Razorpay (${rf.id}) but could not be saved here: ${e.message}. Press Refund again to record it.`, 502); }
+  return json({ refund_id: rf.id, amount: o.total });
 }
 
 export async function handle(req, env, f = fetch) {
