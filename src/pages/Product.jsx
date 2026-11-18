@@ -197,13 +197,14 @@ export default function Product({ onAdded, onCheckout }) {
           <button className="btn-outline btn-outline--lg buy__now" onClick={buyNow} disabled={!canBuy}>Shop Now</button>
           <p className="buy__ship">Free shipping on orders of Rs. 15,000 and above</p>
 
-          <div className="acc">
-            <Acc title="Description"><p>{p.desc || COPY[p.type]}</p><p>Model is 6 ft and wears size M.</p></Acc>
-            <Acc title="Details"><ul><li>{p.craft || 'Made by hand'}</li><li>Oversized, relaxed fit</li><li>Made in India, in small batches</li></ul></Acc>
-            <Acc title="Delivery and returns"><p>Orders ship within 3–5 working days and arrive in 4–7 days across India. Unworn pieces with tags can be exchanged within 7 days of delivery. Limited-edition pieces are final sale.</p></Acc>
-            <Acc title="Wash and care"><p>Dry clean recommended. If washing at home, hand wash cold with a mild detergent, turn inside out and dry in shade. Do not bleach or tumble dry.</p></Acc>
-          </div>
         </section>
+      </div>
+
+      <div className="acc">
+        <Acc title="Description"><p>{p.desc || COPY[p.type]}</p><p>Model is 6 ft and wears size M.</p></Acc>
+        <Acc title="Details"><ul><li>{p.craft || 'Made by hand'}</li><li>Oversized, relaxed fit</li><li>Made in India, in small batches</li></ul></Acc>
+        <Acc title="Delivery and returns"><p>Orders ship within 3–5 working days and arrive in 4–7 days across India. Unworn pieces with tags can be exchanged within 7 days of delivery. Limited-edition pieces are final sale.</p></Acc>
+        <Acc title="Wash and care"><p>Dry clean recommended. If washing at home, hand wash cold with a mild detergent, turn inside out and dry in shade. Do not bleach or tumble dry.</p></Acc>
       </div>
 
       <section className="related">
