@@ -7,6 +7,8 @@ import { useAuth } from '../auth';
 import { useCatalog } from '../store';
 import { supabase } from '../lib/supabase';
 
+const STATES = ['Andaman and Nicobar Islands', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chandigarh', 'Chhattisgarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir', 'Jharkhand', 'Karnataka', 'Kerala', 'Ladakh', 'Lakshadweep', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Puducherry', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'];
+const Alert = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7.500v5.500M12 16.500v.2" /></svg>;
 const BLANK = { name: '', phone: '', email: '', line1: '', line2: '', city: '', state: '', pincode: '' };
 const RULES = {
   name: (v) => (v.trim() ? '' : 'Enter your name.'),
@@ -17,7 +19,7 @@ const RULES = {
   state: (v) => (v.trim() ? '' : 'Enter your state.'),
   pincode: (v) => (/^[1-9]\d{5}$/.test(v) ? '' : 'Enter a 6-digit pincode.'),
 };
-const LABEL = { name: 'Full name', phone: 'Mobile number', email: 'Email (optional)', line1: 'Address line 1', line2: 'Address line 2 (optional)', city: 'City', state: 'State', pincode: 'Pincode' };
+const LABEL = { name: 'Full name', phone: 'Mobile number', email: 'Email (optional)', line1: 'Address', line2: 'Landmark or apartment (optional)', city: 'City', state: 'State', pincode: 'Pincode' };
 const FAIL = {
   cart_issues: 'Something in your cart changed. Close this and review your cart, then try again.',
   coupon_invalid: "That coupon can't be used on this order. Remove it and try again.",
@@ -98,80 +100,107 @@ export default function CheckoutModal({ open, onClose }) {
     nav(`/order/${data.id}${payment === 'prepaid' ? '?pay=1' : ''}`); // online orders open the payment window there; the order already exists and holds the stock
   };
 
-  const field = (k) => (
-    <label key={k} className={`co__f ${k === 'line1' || k === 'line2' || k === 'name' || k === 'email' ? 'co__f--wide' : ''}`}>
-      <span>{k === 'email' && payment === 'prepaid' ? 'Email' : LABEL[k]}</span>
-      <input value={f[k]} onChange={(e) => set(k, e.target.value)} aria-invalid={Boolean(errs[k])} aria-describedby={errs[k] ? `co-${k}` : undefined}
-        inputMode={k === 'phone' || k === 'pincode' ? 'numeric' : undefined} maxLength={k === 'phone' ? 10 : k === 'pincode' ? 6 : 120}
-        autoComplete={{ name: 'name', phone: 'tel-national', email: 'email', line1: 'address-line1', line2: 'address-line2', city: 'address-level2', state: 'address-level1', pincode: 'postal-code' }[k]} />
-      {errs[k] && <em id={`co-${k}`} className="co__ferr" role="alert">{errs[k]}</em>}
-    </label>
-  );
+  const field = (k) => {
+    const common = { id: `co-${k}`, value: f[k], 'aria-invalid': Boolean(errs[k]), 'aria-describedby': errs[k] ? `co-${k}-err` : undefined };
+    const auto = { name: 'name', phone: 'tel-national', email: 'email', line1: 'address-line1', line2: 'address-line2', city: 'address-level2', state: 'address-level1', pincode: 'postal-code' }[k];
+    return (
+      <label key={k} htmlFor={`co-${k}`} className={`cf ${['name', 'line1', 'line2', 'state'].includes(k) ? 'cf--wide' : ''} ${k === 'phone' ? 'cf--tel' : ''} ${k === 'state' ? 'cf--sel' : ''} ${errs[k] ? 'is-bad' : ''}`}>
+        {k === 'state' ? (
+          <select {...common} onChange={(e) => set(k, e.target.value)} autoComplete={auto}>
+            <option value="" />
+            {f.state && !STATES.includes(f.state) && <option>{f.state}</option>}
+            {STATES.map((s) => <option key={s}>{s}</option>)}
+          </select>
+        ) : (
+          <input {...common} onChange={(e) => set(k, e.target.value)} placeholder=" " autoComplete={auto}
+            inputMode={k === 'phone' || k === 'pincode' ? 'numeric' : undefined} maxLength={k === 'phone' ? 10 : k === 'pincode' ? 6 : 120} type={k === 'email' ? 'email' : 'text'} />
+        )}
+        <span>{k === 'email' && payment === 'prepaid' ? 'Email' : LABEL[k]}</span>
+        {k === 'phone' && <b className="cf__pre" aria-hidden="true">+91</b>}
+        {errs[k] && <em id={`co-${k}-err`} className="cf__err" role="alert"><Alert />{errs[k]}</em>}
+      </label>
+    );
+  };
+  const money = (n) => inr(n).replace('Rs. ', '₹').replace('.00', '');
 
   return (
-    <dialog ref={ref} className="co" onClose={onClose} onClick={(e) => e.target === ref.current && onClose()} aria-label="Checkout">
-      <div className="co__head">
-        <button onClick={onClose} aria-label="Close checkout"><Close size={18} /></button>
+    <dialog ref={ref} className="co" onClose={onClose} aria-label="Checkout">
+      <header className="co__bar">
+        <button className="co__x" onClick={onClose} aria-label="Close checkout"><Close size={20} /></button>
         <span className="co__word">KHYAL</span>
-        <span className="co__sec">100% Secured Payment <Lock size={12} /></span>
-      </div>
+        <span className="co__sec"><Lock size={13} />Secure checkout</span>
+      </header>
 
-      <div className="co__body">
-        <div className="co__card">
-          <button className="co__sumhead" onClick={() => setSum(!sum)} aria-expanded={sum}>
-            <span>Order Summary</span>
-            <span>{count} {count === 1 ? 'item' : 'items'}<b aria-busy={quoting}>{inr(total).replace('Rs. ', '₹').replace('.00', '')}</b><ChevronDown size={16} className={sum ? 'flip' : ''} /></span>
-          </button>
-          {sum && (
-            <ul className="co__items">
-              {items.map((it) => <li key={it.key}><span>{it.name} × {it.qty}</span><span>{inr(it.price * it.qty)}</span></li>)}
-              <li><span>Subtotal</span><span>{inr(subtotal)}</span></li>
-              {discount > 0 && <li className="co__disc"><span>Coupon {coupon.toUpperCase()}</span><span>− {inr(discount)}</span></li>}
-              <li><span>Shipping</span><span>{shipping === 0 ? 'Free' : inr(shipping)}</span></li>
-              {codFee > 0 && <li><span>Cash on delivery fee</span><span>{inr(codFee)}</span></li>}
-              <li className="co__total"><span>Total (incl. GST)</span><span>{inr(total)}</span></li>
-            </ul>
-          )}
+      <div className="co__scroll">
+        <div className="co__main">
+          <h1>Delivery details</h1>
+          <p className="co__lede">Where should we send your order? We use your mobile number for delivery updates.</p>
+
+          <div className="co__fields">{['name', 'phone', 'email', 'line1', 'line2', 'pincode', 'city', 'state'].map(field)}</div>
+
+          <section className="co__sec2" aria-labelledby="co-pay-h">
+            <h2 id="co-pay-h">Payment</h2>
+            <div className="co__opts" role="radiogroup" aria-labelledby="co-pay-h">
+              <label className={`co__row ${online ? '' : 'is-off'}`}>
+                <input type="radio" name="pay" checked={payment === 'prepaid'} disabled={!online} onChange={() => setPayment('prepaid')} />
+                <span><strong>Pay online</strong><small>{online ? 'UPI, cards, netbanking, wallets' : 'Not available right now'}</small></span>
+              </label>
+              {(!cod || cod.enabled) && (
+                <label className="co__row">
+                  <input type="radio" name="pay" checked={payment === 'cod'} onChange={() => setPayment('cod')} />
+                  <span><strong>Cash on delivery</strong><small>{cod ? `${inr(cod.fee)} extra fee` : 'An extra fee applies'}</small></span>
+                </label>
+              )}
+            </div>
+          </section>
+
+          <section className="co__sec2" aria-labelledby="co-cp-h">
+            <h2 id="co-cp-h">Coupon</h2>
+            <form className="co__coupon" onSubmit={apply}>
+              <label className={`cf ${rejected ? 'is-bad' : ''}`}>
+                <input value={code} onChange={(e) => setCode(e.target.value)} placeholder=" " aria-invalid={rejected} autoComplete="off" />
+                <span>Coupon code</span>
+              </label>
+              <button type="submit" className="btn-line" disabled={!code.trim() || quoting}>Apply</button>
+            </form>
+            {applied && <p className="co__ok" role="status">{couponResult.message}. You saved {inr(discount)}. <button type="button" className="ul" onClick={clear}>Remove</button></p>}
+            {applied && couponResult.recheck && <p className="co__hint">First-order codes are checked again with your phone number when you place the order.</p>}
+            {rejected && <p className="co__bad" role="alert"><Alert />{couponResult.message}</p>}
+          </section>
+
+          <section className="co__sec2" aria-labelledby="co-sum-h">
+            <button className="co__sumhead" onClick={() => setSum(!sum)} aria-expanded={sum}>
+              <h2 id="co-sum-h">Order summary</h2>
+              <span>{count} {count === 1 ? 'item' : 'items'}<ChevronDown size={16} className={sum ? 'flip' : ''} /></span>
+            </button>
+            {sum && (
+              <ul className="co__items">
+                {items.map((it) => <li key={it.key}><span>{it.name} × {it.qty}</span><span>{inr(it.price * it.qty)}</span></li>)}
+                <li><span>Subtotal</span><span>{inr(subtotal)}</span></li>
+                {discount > 0 && <li className="co__disc"><span>Coupon {coupon.toUpperCase()}</span><span>− {inr(discount)}</span></li>}
+                <li><span>Shipping</span><span>{shipping === 0 ? 'Free' : inr(shipping)}</span></li>
+                {codFee > 0 && <li><span>Cash on delivery fee</span><span>{inr(codFee)}</span></li>}
+              </ul>
+            )}
+          </section>
+
+          <label className="co__optin"><input type="checkbox" checked={optin} onChange={(e) => setOptin(e.target.checked)} />Send me order updates and offers. No spam.</label>
+          {!ready && !quoting && items.length > 0 && <p className="co__bad" role="alert"><Alert />Some items in your cart need attention. Close this and review your cart.</p>}
+          {fail && <p className="co__bad" role="alert"><Alert />{fail}</p>}
+          <p className="co__legal">By continuing you agree to our <a href="/policies/privacy">Privacy Policy</a> and <a href="/policies/terms">Terms</a>.</p>
         </div>
-
-        <form className="co__card co__coupon" onSubmit={apply}>
-          <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Enter coupon code" aria-label="Coupon code" aria-invalid={rejected} />
-          <button type="submit" disabled={!code.trim() || quoting}>Apply</button>
-          {applied && <p className="co__ok" role="status">{couponResult.message}. You saved {inr(discount)}. <button type="button" className="ul" onClick={clear}>Remove</button></p>}
-          {applied && couponResult.recheck && <p className="co__hint">First-order codes are checked again with your phone number when you place the order.</p>}
-          {rejected && <p className="co__err" role="alert">{couponResult.message}</p>}
-        </form>
-
-        <fieldset className="co__card co__pay">
-          <legend>Payment method</legend>
-          <label className={`co__radio ${online ? '' : 'is-off'}`}>
-            <input type="radio" name="pay" checked={payment === 'prepaid'} disabled={!online} onChange={() => setPayment('prepaid')} />
-            <span>Pay online<small>{online ? 'UPI, cards, netbanking' : 'Coming soon'}</small></span>
-          </label>
-          {(!cod || cod.enabled) && (
-            <label className="co__radio">
-              <input type="radio" name="pay" checked={payment === 'cod'} onChange={() => setPayment('cod')} />
-              <span>Cash on delivery<small>{cod ? `+ ${inr(cod.fee)} fee` : 'Extra fee applies'}</small></span>
-            </label>
-          )}
-        </fieldset>
-
-        <fieldset className="co__card co__addr">
-          <legend>Delivery details</legend>
-          <div className="co__grid">{['name', 'phone', 'email', 'line1', 'line2', 'city', 'state', 'pincode'].map(field)}</div>
-        </fieldset>
-
-        {!ready && !quoting && items.length > 0 && <p className="co__err" role="alert">Some items in your cart need attention. Close this and review your cart.</p>}
-        {fail && <p className="co__err" role="alert">{fail}</p>}
       </div>
 
-      <div className="co__foot">
-        <label className="co__opt"><input type="checkbox" checked={optin} onChange={(e) => setOptin(e.target.checked)} /> Send me order updates &amp; offers - (no spam)</label>
-        <button className="co__go" disabled={!ready || busy || (payment === 'prepaid' && !online)} onClick={place}>
-          {busy ? 'Placing order…' : payment === 'cod' ? `Place order · ${inr(total)}` : 'Continue to payment'}
+      <footer className="co__foot">
+        <div className="co__total">
+          <span>Total</span>
+          <b aria-busy={quoting}>{money(total)}</b>
+          <small>incl. GST · shipping {shipping === 0 ? 'free' : money(shipping)}</small>
+        </div>
+        <button className="btn-dark btn-dark--wide co__go" disabled={!ready || busy || (payment === 'prepaid' && !online)} onClick={place}>
+          {busy ? 'Placing order…' : payment === 'cod' ? 'Place order' : 'Continue to payment'}
         </button>
-        <p>By proceeding, I agree to the <a href="/policies/privacy">Privacy Policy</a> and <a href="/policies/terms">T&amp;C</a></p>
-      </div>
+      </footer>
     </dialog>
   );
 }
