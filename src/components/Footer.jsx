@@ -32,9 +32,6 @@ export default function Footer() {
       </div>
       <div className="ftr__base">
         <p>{copyright}</p>
-        <ul className="pay" aria-label="Accepted payments">
-          {['VISA', 'Mastercard', 'RuPay', 'UPI', 'AMEX'].map((m) => <li key={m}>{m}</li>)}
-        </ul>
       </div>
     </footer>
   );
