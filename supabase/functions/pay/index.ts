@@ -45,7 +45,10 @@ async function rz(c, path, body, method = body ? 'POST' : 'GET') {
     body: body ? JSON.stringify(body) : undefined,
   });
   const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(`Razorpay: ${j?.error?.description || r.status}`);
+  if (!r.ok) { // name the call, Razorpay's own code/field/reason, and the HTTP status: "invalid request" alone is impossible to act on
+    const e = j?.error || {};
+    throw new Error(`Razorpay ${method} ${path.replace(/(pay|order)_\w+/g, '$1_…')}: ${e.description || 'no description'}${e.field ? ` (field: ${e.field})` : ''}${e.reason ? ` [${e.reason}]` : ''}${e.code ? ` {${e.code}}` : ''} HTTP ${r.status}`);
+  }
   return j;
 }
 
@@ -133,7 +136,7 @@ async function refund(c, b, req) {
       if (!rf) throw new Fail('Razorpay says this payment was refunded, but returned no refund record. Check the Razorpay dashboard.', 502);
     } else {
       if (pay.status !== 'captured') throw new Fail(`Razorpay shows this payment as "${pay.status}", so it cannot be refunded.`, 409);
-      rf = await rz(c, `/payments/${pay.id}/refund`, { amount: o.total * 100, speed: 'normal', notes: { order: String(o.number) } });
+      rf = await rz(c, `/payments/${pay.id}/refund`, { amount: o.total * 100 });
     }
   } catch (e) { console.error('pay refund', o.number, e.message); throw e instanceof Fail ? e : new Fail(e.message, 502); } // logged too, so it shows in the function logs
   try {
