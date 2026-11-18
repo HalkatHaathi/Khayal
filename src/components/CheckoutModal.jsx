@@ -79,6 +79,7 @@ export default function CheckoutModal({ open, onClose }) {
 
   const place = async () => {
     const next = Object.fromEntries(Object.keys(RULES).map((k) => [k, RULES[k](f[k])]).filter(([, v]) => v));
+    if (payment === 'prepaid' && !f.email.trim() && !next.email) next.email = 'Enter your email: Razorpay needs it for your payment receipt.';
     setErrs(next); setFail('');
     if (Object.keys(next).length) return;
     if (!supabase) return setFail('Orders are not connected in this environment.');
@@ -99,7 +100,7 @@ export default function CheckoutModal({ open, onClose }) {
 
   const field = (k) => (
     <label key={k} className={`co__f ${k === 'line1' || k === 'line2' || k === 'name' || k === 'email' ? 'co__f--wide' : ''}`}>
-      <span>{LABEL[k]}</span>
+      <span>{k === 'email' && payment === 'prepaid' ? 'Email' : LABEL[k]}</span>
       <input value={f[k]} onChange={(e) => set(k, e.target.value)} aria-invalid={Boolean(errs[k])} aria-describedby={errs[k] ? `co-${k}` : undefined}
         inputMode={k === 'phone' || k === 'pincode' ? 'numeric' : undefined} maxLength={k === 'phone' ? 10 : k === 'pincode' ? 6 : 120}
         autoComplete={{ name: 'name', phone: 'tel-national', email: 'email', line1: 'address-line1', line2: 'address-line2', city: 'address-level2', state: 'address-level1', pincode: 'postal-code' }[k]} />
