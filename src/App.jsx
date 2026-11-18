@@ -29,6 +29,13 @@ export default function App() {
   const { status, retry, content } = useCatalog();
   const heroFirst = content.home.sections.find((s) => s.visible !== false)?.type === 'hero';
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  useEffect(() => { // fade the first-paint loader (index.html) away once there is something to show, but never faster than 0.9s so the pulse is seen
+    if (status === 'loading') return;
+    const el = document.getElementById('boot');
+    if (!el) return;
+    const t = setTimeout(() => { el.classList.add('is-done'); setTimeout(() => el.remove(), 700); }, Math.max(0, 900 - performance.now()));
+    return () => clearTimeout(t);
+  }, [status]);
 
   return (
     <>
