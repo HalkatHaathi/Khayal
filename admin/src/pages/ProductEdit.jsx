@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Failed, Icon, PageHead, SIZES, Switch, Thumb, WAIST, bySize, ok, slugify, useAsync, useToast } from '../lib/ui';
 
 const BUCKET = 'product-images';
-const BLANK = { name: '', slug: '', type: '', kind: 'tee', craft: '', description: '', price: '', compare_at: '', price_from: false, pants_addon: '', fit: 'Men', tone: '#cfc8bd', alt_tone: '#b9b2a6', is_active: false };
+const BLANK = { name: '', slug: '', type: '', kind: 'tee', craft: '', description: '', price: '', compare_at: '', price_from: false, pants_addon: '', fit: 'Men', tone: '#cfc8bd', alt_tone: '#b9b2a6', is_active: false, gallery_layout: 'feature' };
 const STORE = import.meta.env.VITE_STORE_URL || 'http://localhost:5173';
 
 async function load(id) {
@@ -20,6 +20,18 @@ async function load(id) {
   if (!data) throw new Error('That product does not exist.');
   return { ...base, product: data };
 }
+
+// the photo layouts the product page can show. Rectangles are [x, y, w, h] on a 48 x 58 sketch; keep in step with the .pdp__track--* rules in the storefront CSS.
+const LAYOUTS = [
+  ['feature', 'Large, then pairs', 'The first photo runs full width, the rest sit two across.', [[0, 0, 48, 22], [0, 24, 23, 16], [25, 24, 23, 16], [0, 42, 23, 16], [25, 42, 23, 16]]],
+  ['pairs', 'Two across', 'Every photo in a two-column grid.', [[0, 0, 23, 16], [25, 0, 23, 16], [0, 18, 23, 16], [25, 18, 23, 16], [0, 36, 23, 16], [25, 36, 23, 16]]],
+  ['stack', 'One column', 'One large photo per row.', [[0, 0, 48, 17], [0, 19, 48, 17], [0, 38, 48, 17]]],
+  ['alternate', 'Large, pair, large', 'A full-width photo, then two, repeating.', [[0, 0, 48, 17], [0, 19, 23, 17], [25, 19, 23, 17], [0, 38, 48, 17]]],
+  ['carousel', 'Swipe', 'One photo at a time, with arrows.', [[6, 5, 36, 46]]],
+];
+const Sketch = ({ rects }) => (
+  <svg viewBox="0 0 48 58" width="44" height="54" aria-hidden="true">{rects.map(([x, y, w, h], i) => <rect key={i} x={x} y={y} width={w} height={h} fill="currentColor" opacity={i === 0 ? 0.9 : 0.45} />)}</svg>
+);
 
 export default function ProductEdit() {
   const { id } = useParams();
@@ -104,6 +116,7 @@ function Editor({ data, isNew }) {
         price: Number(f.price), compare_at: f.compare_at === '' ? null : Number(f.compare_at), price_from: f.price_from,
         pants_addon: f.pants_addon === '' ? null : Number(f.pants_addon), tone: f.tone, alt_tone: f.alt_tone, fit: f.fit.trim() || 'Men', is_active: f.is_active,
       };
+      if (f.gallery_layout !== 'feature' || (p && 'gallery_layout' in p)) row.gallery_layout = f.gallery_layout; // the column exists after migration 0011
       if (isNew) {
         const top = await supabase.from('products').select('sort').order('sort', { ascending: false }).limit(1).then(ok);
         row.sort = (top[0]?.sort ?? 0) + 1; // storefront shows the highest sort first
@@ -133,7 +146,7 @@ function Editor({ data, isNew }) {
       toast(isNew ? 'Product created' : 'Changes saved');
       if (isNew) nav(`/products/${pid}`, { replace: true }); else window.location.reload(); // reload re-reads everything so the saved state is what the database holds
     } catch (e) {
-      toast(e.code === '23505' ? 'Another product already uses that URL name.' : e.message || 'Could not save.', 'err');
+      toast(e.code === '23505' ? 'Another product already uses that URL name.' : /gallery_layout/.test(e.message || '') ? 'Photo layouts need a database update: run supabase/migrations/0011_gallery_layout.sql, then save again.' : e.message || 'Could not save.', 'err');
       setBusy(false);
     }
   };
@@ -172,6 +185,19 @@ function Editor({ data, isNew }) {
           <section className="grp">
             <h2>Photos</h2>
             <p className="hint">First photo is the main image, the second shows on hover. JPG, PNG, WebP or AVIF, up to 5 MB each.</p>
+            <div className="lay" role="radiogroup" aria-label="Photo layout on the product page">
+              {LAYOUTS.map(([k, name, desc, rects]) => (
+                <button key={k} type="button" role="radio" aria-checked={f.gallery_layout === k} className={`lay__opt ${f.gallery_layout === k ? 'is-on' : ''}`} onClick={() => setF((x) => ({ ...x, gallery_layout: k }))}>
+                  <Sketch rects={rects} /><span><strong>{name}</strong><small>{desc}</small></span>
+                </button>
+              ))}
+            </div>
+            {images.length > 0 && (
+              <div className="lay__prev" aria-label="Layout preview">
+                <p className="hint">Preview on the product page (computers; phones always swipe):</p>
+                <div className={`gp gp--${f.gallery_layout}`}>{images.map((im) => <img key={im.id} src={im.url} alt="" />)}</div>
+              </div>
+            )}
             <ul className="imgs">
               {images.map((im, i) => (
                 <li key={im.id}>

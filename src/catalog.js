@@ -23,7 +23,7 @@ export function fromRows(products, links) {
       id: r.id, slug: r.slug, name: r.name, craft: r.craft, desc: r.description, price: r.price, was: r.compare_at ?? undefined,
       from: r.price_from, tone: r.tone, alt: r.alt_tone, kind: r.kind, type: r.type, fit: r.fit, pantsAddon: r.pants_addon,
       sizes, stock, inStock: sizes.length > 0, left: Math.max(0, ...Object.values(stock)), date: products.length - i,
-      bestRank: rank.has(r.id) ? rank.get(r.id) : 99, img: gallery[0], imgAlt: gallery[1], gallery,
+      bestRank: rank.has(r.id) ? rank.get(r.id) : 99, img: gallery[0], imgAlt: gallery[1], gallery, layout: r.gallery_layout || 'feature',
     };
   });
 }

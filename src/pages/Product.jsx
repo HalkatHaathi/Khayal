@@ -75,8 +75,8 @@ function Gallery({ p }) {
     return () => el.removeEventListener('scroll', f);
   }, []);
   return (
-    <div className="pdp__gallery" role="region" aria-roledescription="carousel" aria-label={`${p.name} photos`}>
-      <div className="pdp__track" ref={ref}>
+    <div className={`pdp__gallery pdp__gallery--${p.layout || 'feature'}`} role="region" aria-roledescription="carousel" aria-label={`${p.name} photos`}>
+      <div className={`pdp__track pdp__track--${p.layout || 'feature'}`} ref={ref}>
         {slides.map((s, k) => (
           <div key={k} className="pdp__slide"><Media src={s.src} tone={s.tone} kind={p.kind} alt={`${p.name}, view ${k + 1}`} /></div>
         ))}
