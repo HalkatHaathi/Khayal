@@ -260,6 +260,7 @@ a.row:hover, button.row:hover { background: var(--wash); }
 .block__title { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 10px 0; text-align: left; font-weight: 500; }
 .block__title small { color: var(--mute); font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .block__title svg { transition: transform .3s var(--ease); flex: none; } .block__title .rot { transform: rotate(-90deg); }
+.block__warn { font-style: normal; font-size: 12px; color: var(--warn); white-space: nowrap; margin-left: auto; padding-right: 8px; }
 .block__body { padding: 8px 0 26px 28px; max-width: 760px; }
 .addbar { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
 .addbar select { font: inherit; font-size: 14px; border: 1px solid var(--line); background: var(--paper); padding: 10px 12px; border-radius: 0; }

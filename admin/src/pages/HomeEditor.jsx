@@ -54,8 +54,6 @@ function Editor({ data }) {
   const patch = (id, k, v) => setSections((cur) => cur.map((s) => (s.id === id ? { ...s, [k]: v } : s)));
 
   const save = async () => {
-    const empty = sections.find((s) => s.type === 'products' && !s.collection && s.visible !== false); // a hidden block is never shown, so it may stay unfinished
-    if (empty) { setOpen(empty.id); return toast(`Choose a collection for the product row "${empty.title || 'untitled'}", or remove it.`, 'err'); }
     const bad = sections.flatMap((s) => [s.link, ...(s.items || []).flatMap((x) => [x.to, x.link])]).some((l) => !okLink(l));
     if (bad) return toast('One of the links is not valid. Look for the red field.', 'err');
     setBusy(true);
@@ -77,7 +75,7 @@ function Editor({ data }) {
             <li key={s.id} className={`block ${s.visible === false ? 'is-dim' : ''}`}>
               <div className="block__head">
                 <button type="button" className="block__title" aria-expanded={isOpen} onClick={() => setOpen(isOpen ? '' : s.id)}>
-                  <Icon.Down size={16} className={isOpen ? '' : 'rot'} /><span>{sc.label}</span><small>{summary(s) !== sc.label ? summary(s) : ''}</small>
+                  <Icon.Down size={16} className={isOpen ? '' : 'rot'} /><span>{sc.label}</span><small>{summary(s) !== sc.label ? summary(s) : ''}</small>{s.type === 'products' && !s.collection && <em className="block__warn">Not shown: choose a collection</em>}
                 </button>
                 <Switch on={s.visible !== false} onChange={(v) => patch(s.id, 'visible', v)} label={`Show ${sc.label} on the store`} />
                 <RowTools i={i} n={sections.length} move={(idx, d) => setSections(moveIn(sections, idx, d))} remove={() => { if (window.confirm(`Remove this ${sc.label.toLowerCase()} block?`)) setSections(sections.filter((x) => x.id !== s.id)); }} label={sc.label} />
