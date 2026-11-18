@@ -62,7 +62,10 @@ export default function Home() {
           })}
         </section>
       );
-      case 'products': return <Row key={s.id} title={s.title} sub={s.sub} to={`/collections/${s.collection}`} products={collections[s.collection]?.items ?? []} peek={s.peek} upper={s.upper} />;
+      case 'products': { // a row with no collection, or an empty one, shows nothing rather than a heading over a blank carousel
+        const items = collections[s.collection]?.items ?? [];
+        return items.length ? <Row key={s.id} title={s.title} sub={s.sub} to={`/collections/${s.collection}`} products={items} peek={s.peek} upper={s.upper} /> : null;
+      }
       case 'banner': return (
         <A key={s.id} to={s.link} className="banner" aria-label={[s.title, s.sub].filter(Boolean).join(', ')}>
           <div className={`banner__bg ${s.image ? 'has-img px' : ''}`} style={s.image ? { backgroundImage: `url("${encodeURI(s.image)}")` } : undefined} />

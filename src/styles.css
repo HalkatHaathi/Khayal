@@ -196,19 +196,21 @@ img { display: block; max-width: 100%; }
 .news__legal a { text-decoration: underline; text-underline-offset: 3px; }
 
 /* ---------- footer ---------- */
-.ftr { background: var(--night); color: var(--paper); padding: 24px var(--pad) 88px; }
-.stamp { width: 104px; height: 104px; display: block; object-fit: cover; }
-.ftr__cols { display: grid; grid-template-columns: 449px 394px 1fr; margin-top: 40px; }
-.ftr h2 { font-size: 18px; font-weight: 400; margin-bottom: 20px; }
+.ftr { background: var(--paper); color: var(--ink); border-top: 1px solid var(--ink); padding: 64px var(--pad) 96px; }
+.stamp { width: 88px; height: 88px; display: block; object-fit: cover; }
+.ftr__cols { display: grid; grid-template-columns: minmax(240px, 1.5fr) repeat(auto-fit, minmax(150px, 1fr)); gap: 48px; }
+.ftr__brand { display: grid; gap: 20px; align-content: start; } .ftr__brand p { font-size: 13.5px; line-height: 1.65; letter-spacing: .02em; max-width: 24em; }
+.ftr h2 { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 16px; }
 .ftr li { margin: 0; }
-.ftr li a { display: inline-block; padding: 11px 0; font-size: 13.5px; font-weight: 500; letter-spacing: .06em; }
-.ftr li a:hover, .ftr__social a:hover { opacity: .65; }
-.ftr__social { display: flex; align-items: center; margin-left: -12px; }
-.ftr__social a { display: grid; place-items: center; width: 44px; height: 44px; }
-.ftr__base { display: flex; justify-content: space-between; align-items: center; margin-top: 58px; padding-right: 92px; }
-.ftr__base p { font-size: 14px; font-weight: 500; letter-spacing: .03em; }
-.pay { display: flex; gap: 8px; }
-.pay li { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: .04em; background: var(--paper); color: #222; padding: 6px 9px; border-radius: 3px; }
+.ftr li a { display: inline-block; padding: 7px 0; font-size: 14px; letter-spacing: .02em; }
+.ftr li a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.ftr__social { display: flex; align-items: center; margin-left: -10px; }
+.ftr__social a { display: grid; place-items: center; width: 40px; height: 40px; transition: opacity .2s; }
+.ftr__social a:hover { opacity: .55; }
+.ftr__base { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-top: 72px; padding: 22px 92px 0 0; border-top: 1px solid var(--line); }
+.ftr__base p { font-size: 12px; letter-spacing: .06em; color: var(--mute); }
+.pay { display: flex; gap: 8px; flex-wrap: wrap; }
+.pay li { margin: 0; font-size: 10.5px; font-weight: 600; letter-spacing: .06em; color: var(--mute); border: 1px solid var(--line); padding: 5px 9px; }
 
 /* ---------- floating ---------- */
 .wa { position: fixed; right: 20px; bottom: 20px; z-index: 40; width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; color: var(--paper); background: #1fa971; box-shadow: 0 6px 18px rgba(0,0,0,.25); transition: transform .25s var(--ease); }
@@ -256,7 +258,6 @@ img { display: block; max-width: 100%; }
 
 /* ---------- responsive ---------- */
 @media (max-width: 1100px) {
-  .ftr__cols { grid-template-columns: 1fr 1fr 1fr; }
   .news__form { margin-left: 64px; }
 }
 @media (max-width: 820px) {
@@ -280,8 +281,8 @@ img { display: block; max-width: 100%; }
   .news__img { aspect-ratio: 4 / 3; min-height: 0; }
   .news__form { margin: 0; padding: 40px var(--pad); width: 100%; justify-self: stretch; }
   .news__lede { width: auto; max-width: none; }
-  .ftr__cols { grid-template-columns: 1fr 1fr; gap: 32px 16px; } .ftr__cols > :last-child { grid-column: 1 / -1; }
-  .ftr__base { flex-direction: column; align-items: flex-start; gap: 20px; padding-right: 0; margin-top: 36px; }
+  .ftr { padding-top: 44px; } .ftr__cols { grid-template-columns: 1fr 1fr; gap: 32px 16px; } .ftr__brand { grid-column: 1 / -1; }
+  .ftr__base { flex-direction: column; align-items: flex-start; gap: 18px; padding-right: 0; margin-top: 40px; }
   .search__row .carousel__track > * { flex-basis: 46%; }
   .wa { width: 50px; height: 50px; right: 14px; bottom: 14px; }
 }

@@ -2,7 +2,7 @@ import { A } from '../content';
 import { useCatalog } from '../store';
 import { Facebook, Instagram, XIcon } from './Icons';
 
-const Stamp = () => <img className="stamp" src="/logo.webp" alt="Khayal" width="104" height="104" loading="lazy" />;
+const Stamp = () => <img className="stamp" src="/logo.webp" alt="Khayal" width="88" height="88" loading="lazy" />;
 
 export default function Footer() {
   const { content } = useCatalog();
@@ -10,8 +10,11 @@ export default function Footer() {
   const { social, copyright } = content.site;
   return (
     <footer className="ftr">
-      <Stamp />
       <div className="ftr__cols">
+        <div className="ftr__brand">
+          <Stamp />
+          <p>Craft, culture and contemporary expression, stitched together with purpose.</p>
+        </div>
         {footer.map((c) => (
           <div key={c.title}>
             <h2>{c.title}</h2>
