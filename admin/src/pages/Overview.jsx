@@ -8,14 +8,15 @@ export default function Overview() {
       supabase.from('orders').select('id,number,customer_name,phone,status,total,payment_method,created_at').order('created_at', { ascending: false }).limit(200).then(ok),
       supabase.from('products').select('id,slug,name,tone,kind,is_active,product_sizes(size,stock),product_images(url,position)').then(ok),
     ]);
+    const hold = await supabase.from('site_content').select('value').eq('key', 'site').maybeSingle();
     const ship = await supabase.from('shipments').select('status'); // exists after migration 0008
-    return { orders, products, stuck: ship.error ? 0 : ship.data.filter((x) => ['attention', 'rto'].includes(x.status)).length };
+    return { orders, products, holding: Boolean(hold.data?.value?.holding?.on), stuck: ship.error ? 0 : ship.data.filter((x) => ['attention', 'rto'].includes(x.status)).length };
   });
 
   if (error) return <Failed error={error} retry={reload} />;
   if (loading || !data) return <PageHead title="Overview" />;
 
-  const { orders, products, stuck } = data;
+  const { orders, products, stuck, holding } = data;
   const week = Date.now() - 7 * 864e5;
   const recent = orders.filter((o) => BOOKED(o) && new Date(o.created_at) > week);
   const revenue = recent.reduce((a, o) => a + o.total, 0);
@@ -27,6 +28,7 @@ export default function Overview() {
   return (
     <>
       <PageHead title="Overview" />
+      {holding && <p className="callout hold-flag" role="status">The holding page is ON: visitors cannot see the shop. <Link to="/site" className="ul">Change it</Link></p>}
       <p className="lede">
         {recent.length
           ? <><strong>{inr(revenue)}</strong> booked in the last 7 days across {recent.length} {recent.length === 1 ? 'order' : 'orders'}. </>

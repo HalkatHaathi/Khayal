@@ -49,6 +49,7 @@ export const DEFAULTS = {
     email: 'hello@khyal.store',
     social: { instagram: 'https://instagram.com', facebook: 'https://facebook.com', x: 'https://x.com' },
     copyright: '© K H Y A L 2026',
+    holding: { on: false, title: 'Something new is coming', text: 'We are putting the finishing touches on our next collection. Join the waitlist and be the first to know.', date: '', countdown: true, autoLift: false, image: '', waitlist: true, button: 'Join the waitlist', keepInfo: true, keepTrack: true },
     tracking: { title: 'Track your order', intro: 'Enter your order number and the mobile number you used at checkout.', help: 'Questions about a parcel? Message us on WhatsApp and quote your order number.' },
   },
 };
@@ -60,7 +61,7 @@ export function mergeContent(rows) {
   return {
     home: Array.isArray(m.home?.sections) ? m.home : DEFAULTS.home,
     menus: { ...DEFAULTS.menus, ...(m.menus || {}) },
-    site: { ...DEFAULTS.site, ...s, announcement: { ...DEFAULTS.site.announcement, ...s.announcement }, social: { ...DEFAULTS.site.social, ...s.social }, tracking: { ...DEFAULTS.site.tracking, ...s.tracking } },
+    site: { ...DEFAULTS.site, ...s, announcement: { ...DEFAULTS.site.announcement, ...s.announcement }, social: { ...DEFAULTS.site.social, ...s.social }, tracking: { ...DEFAULTS.site.tracking, ...s.tracking }, holding: { ...DEFAULTS.site.holding, ...s.holding } },
   };
 }
 

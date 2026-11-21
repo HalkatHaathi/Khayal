@@ -105,6 +105,12 @@ The sign-up form on the home page calls the `subscribe` Edge Function (`supabase
 4. Supabase → Edge Functions → deploy a function named **subscribe** with the code from `supabase/functions/subscribe/index.ts` and **Verify JWT off**.
 5. The same Resend key can also send Supabase's sign-up and password emails: Supabase → Project Settings → Authentication → SMTP → host `smtp.resend.com`, port `465`, user `resend`, password = the API key, sender = your verified address.
 
+## Holding page ("coming soon" / maintenance)
+
+Admin → Site → **Holding page**. While it is on, the storefront shows only a full-screen holding page (title, text, optional photo with a dark layer, optional countdown, waitlist sign-up that feeds the subscriber list and welcome email, social links). Shop pages (products, collections, cart, search, checkout) redirect to it. About, Contact, policies and order tracking can stay open (two switches), and `/account/*` always stays open so the team can sign in. **A signed-in admin sees the real store** (sign in on the storefront with an admin account); a note at the bottom says so. `/holding-preview` shows the saved holding page even while it is off. With "open automatically at the launch time" ticked, the page stops showing by itself at that time. Nothing to deploy to turn it on or off: it is a saved setting. Rules are in `src/holding.js` (tests: `node --test src/holding.test.mjs`).
+
+It is a visitor-facing page, not a security wall: the product data is still readable by anyone who calls the public API directly.
+
 ## Supabase dashboard settings to check before launch
 
 - Authentication → URL Configuration: Site URL = your domain; add `https://your-domain/**` and `http://localhost:5173/**` to Redirect URLs.

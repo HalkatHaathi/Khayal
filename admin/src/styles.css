@@ -349,3 +349,5 @@ a.row:hover, button.row:hover { background: var(--wash); }
   .savebar { padding: 12px var(--pad); } .savebar > span { font-size: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+.hold-flag { margin: -8px 0 28px; max-width: 46em; }
