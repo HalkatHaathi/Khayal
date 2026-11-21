@@ -24,7 +24,7 @@ const PAGES = {
   returns: {
     title: 'Returns & Exchange',
     body: [
-      ['Exchanges', 'Unworn pieces with tags can be exchanged within 7 days of delivery, subject to stock.'],
+      ['Exchanges', 'Unworn pieces with tags can be exchanged within {{return_days}} days of delivery, subject to stock.'],
       ['Final sale', 'Limited-edition and sale pieces cannot be returned or exchanged.'],
     ],
   },
@@ -85,7 +85,8 @@ function Contact({ to }) {
 
 /** Text from the admin (public.pages) wins; the copy above is the fallback before migration 0007 or when a page is missing. */
 export default function Info({ page }) {
-  const { pages, content } = useCatalog();
+  const { pages, content, settings } = useCatalog();
+  const days = String(settings?.return_days ?? 7); // the admin's return window: write {{return_days}} in any page
   const db = pages[page];
   const fb = page === 'contact' ? { title: 'Contact us', body: [['We read every message', 'Questions about an order, a fit or a collaboration: write to us and we will reply within two working days.']] } : PAGES[page];
   const c = db ? { title: db.title, body: db.body.map((x) => [x.h, x.t]) } : fb;
@@ -95,7 +96,7 @@ export default function Info({ page }) {
   return (
     <main className="info">
       <h1>{c.title}</h1>
-      {c.body.map(([h, t], i) => <section key={i}>{h && <h2>{h}</h2>}<p className="info__text">{t}</p></section>)}
+      {c.body.map(([h, t], i) => <section key={i}>{h && <h2>{h}</h2>}<p className="info__text">{t.replaceAll('{{return_days}}', days)}</p></section>)}
       {page === 'contact' && <Contact to={content.site.email} />}
       <Link to="/" className="ul ul--sm">Return to Store</Link>
     </main>

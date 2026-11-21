@@ -24,11 +24,13 @@ import ContentPages from './pages/ContentPages';
 import PageEdit from './pages/PageEdit';
 import Site from './pages/Site';
 import Emails from './pages/Emails';
+import Affiliates from './pages/Affiliates';
+import AffiliateEdit from './pages/AffiliateEdit';
 
 const NAV = [
   ['Sales', [['/', 'Overview', Icon.Overview, true], ['/orders', 'Orders', Icon.Bag], ['/shipments', 'Shipments', Icon.Truck], ['/customers', 'Customers', Icon.People]]],
   ['Catalogue', [['/products', 'Products', Icon.Box], ['/inventory', 'Inventory', Icon.Stock], ['/collections', 'Collections', Icon.Grid]]],
-  ['Marketing', [['/discounts', 'Discounts', Icon.Tag], ['/messages', 'Messages', Icon.Mail], ['/emails', 'Emails', Icon.Doc], ['/subscribers', 'Subscribers', Icon.People]]],
+  ['Marketing', [['/discounts', 'Discounts', Icon.Tag], ['/affiliates', 'Affiliates', Icon.People], ['/messages', 'Messages', Icon.Mail], ['/emails', 'Emails', Icon.Doc], ['/subscribers', 'Subscribers', Icon.People]]],
   ['Storefront', [['/home', 'Home page', Icon.Home], ['/navigation', 'Navigation', Icon.Menu], ['/pages', 'Pages', Icon.Doc], ['/site', 'Site', Icon.Globe]]],
   ['Store', [['/settings', 'Settings', Icon.Cog]]],
 ];
@@ -80,6 +82,8 @@ function Shell() {
             <Route path="/subscribers" element={<Subscribers />} />
             <Route path="/discounts" element={<Discounts />} />
             <Route path="/discounts/:code" element={<DiscountEdit />} />
+            <Route path="/affiliates" element={<Affiliates />} />
+            <Route path="/affiliates/:id" element={<AffiliateEdit />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/home" element={<HomeEditor />} />
             <Route path="/navigation" element={<Navigation />} />

@@ -14,6 +14,7 @@ import Search from './pages/Search';
 import Track from './pages/Track';
 import Auth from './pages/Auth';
 import Account from './pages/Account';
+import Affiliate from './pages/Affiliate';
 import Info, { CustomPage, policySlugs } from './pages/Info';
 import CheckoutModal from './components/CheckoutModal';
 import { useCart } from './cart';
@@ -68,6 +69,7 @@ export default function App() {
           <Route path="/search" element={<Search />} />
           <Route path="/track" element={<Track />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/account/affiliate" element={<Affiliate />} />
           <Route path="/account/reset" element={<Auth mode="reset" />} />
           <Route path="/account/login" element={<Auth mode="login" />} />
           <Route path="/account/register" element={<Auth mode="register" />} />

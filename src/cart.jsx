@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { supabase } from './lib/supabase';
 import { useAuth } from './auth';
+import { storedRef } from './lib/affiliate';
 
 const KEY = 'khayal-cart';
 const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } };
@@ -46,6 +47,12 @@ export function CartProvider({ children }) {
   const [items, dispatch] = useReducer(reduce, null, load);
   const [gift, setGift] = useState({ on: false, note: '' });
   const [coupon, setCoupon] = useState('');
+  // arriving through an affiliate link with a customer discount: apply their code (the shopper can still remove or replace it; one code per order)
+  useEffect(() => {
+    const r = storedRef();
+    if (!r || !supabase) return;
+    supabase.rpc('affiliate_lookup', { p_code: r }).then(({ data }) => { if (data?.percent > 0) setCoupon((c) => c || data.code); });
+  }, []);
   const [payment, setPayment] = useState('prepaid'); // 'prepaid' | 'cod'
   const [quote, setQuote] = useState(null);
   const [quoting, setQuoting] = useState(false);

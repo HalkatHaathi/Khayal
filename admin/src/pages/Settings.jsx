@@ -22,6 +22,7 @@ const NUM = [
   ['free_shipping_min', 'Free shipping from (Rs.)', 'Carts at or above this subtotal ship free.'],
   ['max_qty_per_line', 'Most units per item', 'Per product and size in one order.'],
   ['cod_fee', 'Cash on delivery fee (Rs.)', 'Added to cash-on-delivery orders.'],
+  ['return_days', 'Return window (days)', 'Days after delivery that a customer can return or exchange. Affiliate commission is approved when this window ends. Write {{return_days}} in the Returns policy or any page to show it.'],
 ];
 
 function Form({ s }) {
@@ -33,8 +34,8 @@ function Form({ s }) {
   const dirty = JSON.stringify(f) !== JSON.stringify({ ...s, ...Object.fromEntries(NUM.map(([k]) => [k, String(s[k])])) });
 
   const save = async () => {
-    const bad = NUM.find(([k]) => !/^\d+$/.test(f[k]) || (k === 'max_qty_per_line' && Number(f[k]) < 1));
-    if (bad) return setErr(`${bad[1]} must be a whole number${bad[0] === 'max_qty_per_line' ? ', 1 or more' : ', 0 or more'}.`);
+    const bad = NUM.find(([k]) => !/^\d+$/.test(f[k]) || (k === 'max_qty_per_line' && Number(f[k]) < 1) || (k === 'return_days' && Number(f[k]) > 90));
+    if (bad) return setErr(`${bad[1]} must be a whole number${bad[0] === 'max_qty_per_line' ? ', 1 or more' : bad[0] === 'return_days' ? ' from 0 to 90' : ', 0 or more'}.`);
     setErr(''); setBusy(true);
     const patch = { cod_enabled: f.cod_enabled, online_payments_enabled: f.online_payments_enabled, ...(f.shiprocket_pickup ? { shiprocket_pickup: f.shiprocket_pickup.trim() } : {}), ...Object.fromEntries(NUM.map(([k]) => [k, Number(f[k])])) };
     const { data: saved, error: e } = await supabase.from('shop_settings').update(patch).eq('id', true).select();
@@ -62,6 +63,10 @@ function Form({ s }) {
             <p className="hint">{rz === undefined ? 'Checking Razorpay…' : rz === null ? 'The payment function is not deployed yet, so online payment cannot be turned on. See the README, Razorpay section.'
               : !rz.configured ? 'Razorpay keys are missing. Set RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET and RAZORPAY_WEBHOOK_SECRET in Supabase, then reload.'
               : rz.mode === 'test' ? 'Razorpay is connected in TEST mode: no real money moves. Switch the keys to live before taking real orders.' : 'Razorpay is connected in LIVE mode. Real money moves.'}</p>
+          </section>
+          <section className="grp">
+            <h2>Returns</h2>
+            <label className="lbl">{NUM[4][1]}<input inputMode="numeric" value={f.return_days} onChange={(e) => setF({ ...f, return_days: e.target.value })} /><small>{NUM[4][2]}</small></label>
           </section>
           <section className="grp">
             <h2>Shiprocket</h2>

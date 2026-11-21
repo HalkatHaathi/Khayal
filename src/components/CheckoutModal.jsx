@@ -6,6 +6,7 @@ import { useCart, toQuoteItem } from '../cart';
 import { useAuth } from '../auth';
 import { useCatalog } from '../store';
 import { supabase } from '../lib/supabase';
+import { storedRef } from '../lib/affiliate';
 
 const STATES = ['Andaman and Nicobar Islands', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chandigarh', 'Chhattisgarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir', 'Jharkhand', 'Karnataka', 'Kerala', 'Ladakh', 'Lakshadweep', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Puducherry', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'];
 const Alert = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7.500v5.500M12 16.500v.2" /></svg>;
@@ -90,7 +91,7 @@ export default function CheckoutModal({ open, onClose }) {
       p_items: items.map(toQuoteItem), p_coupon: coupon || null, p_payment: payment,
       p_contact: { name: f.name, phone: f.phone, email: f.email },
       p_address: { line1: f.line1, line2: f.line2, city: f.city, state: f.state, pincode: f.pincode },
-      p_gift: gift.on, p_gift_note: gift.on ? gift.note : null,
+      p_gift: gift.on, p_gift_note: gift.on ? gift.note : null, p_ref: storedRef(),
     });
     setBusy(false);
     if (error) { console.error('create_order', error); return setFail(FAIL[error.message] || "We couldn't place your order. Please try again."); }

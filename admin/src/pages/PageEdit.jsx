@@ -69,7 +69,7 @@ function Editor({ p }) {
               <div key={i} className="item">
                 <div className="item__bar"><span>Section {i + 1}</span><RowTools i={i} n={f.body.length} move={(idx, d) => setF({ ...f, body: moveIn(f.body, idx, d) })} remove={() => setF({ ...f, body: f.body.filter((_, j) => j !== i) })} label={`section ${i + 1}`} /></div>
                 <label className="lbl">Heading<input value={b.h} maxLength={120} onChange={(e) => setBody(i, 'h', e.target.value)} /></label>
-                <label className="lbl">Text<textarea rows={5} value={b.t} maxLength={5000} onChange={(e) => setBody(i, 't', e.target.value)} /><small>Blank lines make new paragraphs.</small></label>
+                <label className="lbl">Text<textarea rows={5} value={b.t} maxLength={5000} onChange={(e) => setBody(i, 't', e.target.value)} /><small>Blank lines make new paragraphs. {'{{return_days}}'} shows your return window from Settings.</small></label>
               </div>
             ))}
             <button type="button" className="btn btn--line btn--sm" onClick={() => setF({ ...f, body: [...f.body, { h: '', t: '' }] })}><Icon.Plus size={14} />Add section</button>

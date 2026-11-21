@@ -39,6 +39,7 @@ Run in this order in the Supabase SQL Editor (each file is safe to re-run), then
 | `supabase/migrations/0010_razorpay.sql` | Razorpay: payment columns, `apply_payment()` (what counts as paid), `get_order()` with hold time and refund state |
 | `supabase/migrations/0012_show_stock.sql` | Per-product switch: show the "Only 3 left" count on the storefront or hide it |
 | `supabase/migrations/0013_emails.sql` | Lets the admin save email templates (`site_content` key `emails`) |
+| `supabase/migrations/0014_affiliates.sql` | Affiliate programme, return window setting, `delivered_at`; replaces `quote_cart` and `create_order` (run it once, in the SQL Editor) |
 | `supabase/migrations/0005_hardening.sql` | Size limits on user-written columns, locks the trigger function |
 | `supabase/seed.sql` | **Sample** catalogue, coupon `KHAYAL10`. Replaces the whole catalogue. Regenerate with `node scripts/gen-seed.mjs` |
 
@@ -104,6 +105,16 @@ The sign-up form on the home page calls the `subscribe` Edge Function (`supabase
 3. Supabase → Edge Functions → Secrets: `RESEND_API_KEY`, `RESEND_FROM` (for example `KHYAL <hello@khyal.store>`), optionally `RESEND_REPLY_TO` (the inbox customers' replies should reach, e.g. your Gmail until Google Workspace exists), `RESEND_AUDIENCE_ID` and `SITE_URL`. Resend cannot send *from* a Gmail address: the From must be on a domain you own and verified in Resend.
 4. Supabase → Edge Functions → deploy a function named **subscribe** with the code from `supabase/functions/subscribe/index.ts` and **Verify JWT off**.
 5. The same Resend key can also send Supabase's sign-up and password emails: Supabase → Project Settings → Authentication → SMTP → host `smtp.resend.com`, port `465`, user `resend`, password = the API key, sender = your verified address.
+
+## Affiliates
+
+Admin, Affiliates: pick an existing store account by email, set a code, a commission % and an optional customer discount %. Their link is `https://khyal.store/?ref=CODE` (remembered 30 days, last click wins); the same code also works in the checkout coupon box. They sign in to the store and open Account, Affiliate dashboard (clicks, orders, earnings, payouts; never customer names).
+
+- Commission = rate % of (subtotal - discount), no shipping or COD fee, fixed when the order is placed. One code per order: the affiliate's discount replaces any other coupon, but a link still credits them.
+- Pending until the order is delivered and `shop_settings.return_days` (Admin, Settings, Return window) have passed, then approved. Cancelled or refunded orders earn nothing. Buying with your own account or email earns nothing.
+- Admin pays by hand (UPI or bank), then presses "Record a payout" on the affiliate page; that marks all approved orders as paid. There is no minimum payout.
+- `{{return_days}}` in any page text (e.g. the Returns policy) shows the return window.
+- Not built: commission rates per product, automated payouts, public sign-up, deleting an affiliate (pause instead).
 
 ## Holding page ("coming soon" / maintenance)
 

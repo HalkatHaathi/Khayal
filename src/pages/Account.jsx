@@ -109,9 +109,12 @@ function Addresses({ user }) {
 export default function Account() {
   const auth = useAuth();
   const [name, setName] = useState('');
+  const [aff, setAff] = useState(false);
   useEffect(() => { document.title = 'My account – KHYAL'; }, []);
   useEffect(() => {
-    if (auth.user) supabase.from('profiles').select('full_name').maybeSingle().then(({ data }) => setName(data?.full_name || ''));
+    if (!auth.user) return;
+    supabase.from('profiles').select('full_name').maybeSingle().then(({ data }) => setName(data?.full_name || ''));
+    supabase.from('affiliates').select('id').maybeSingle().then(({ data }) => setAff(Boolean(data))); // only affiliates have a row they can read
   }, [auth.user]);
 
   if (!auth.ready) return <main className="acct" aria-busy="true" />;
@@ -121,7 +124,7 @@ export default function Account() {
     <main className="acct">
       <header className="acct__head">
         <div><h1>{name ? `Hello, ${name.split(' ')[0]}` : 'My account'}</h1><p>{auth.user.email}</p></div>
-        <button className="btn-line" onClick={auth.signOut}>Sign out</button>
+        <div className="acct__act">{aff && <Link to="/account/affiliate" className="btn-dark">Affiliate dashboard</Link>}<button className="btn-line" onClick={auth.signOut}>Sign out</button></div>
       </header>
       <Orders user={auth.user} />
       <Addresses user={auth.user} />

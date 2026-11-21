@@ -112,7 +112,7 @@ function SizeRow({ label, hint, values, value, onPick, disabled = () => false, o
 export default function Product({ onAdded, onCheckout }) {
   const { slug } = useParams();
   const cart = useCart();
-  const { catalog } = useCatalog();
+  const { catalog, settings } = useCatalog();
   const p = catalog.find((x) => x.slug === slug);
   const isKurta = p?.type === 'Kurtas';
   const isPants = p?.type === 'Pants';
@@ -203,7 +203,7 @@ export default function Product({ onAdded, onCheckout }) {
       <div className="acc">
         <Acc title="Description"><p>{p.desc || COPY[p.type]}</p><p>Model is 6 ft and wears size M.</p></Acc>
         <Acc title="Details"><ul><li>{p.craft || 'Made by hand'}</li><li>Oversized, relaxed fit</li><li>Made in India, in small batches</li></ul></Acc>
-        <Acc title="Delivery and returns"><p>Orders ship within 3–5 working days and arrive in 4–7 days across India. Unworn pieces with tags can be exchanged within 7 days of delivery. Limited-edition pieces are final sale.</p></Acc>
+        <Acc title="Delivery and returns"><p>Orders ship within 3–5 working days and arrive in 4–7 days across India. Unworn pieces with tags can be exchanged within {settings?.return_days ?? 7} days of delivery. Limited-edition pieces are final sale.</p></Acc>
         <Acc title="Wash and care"><p>Dry clean recommended. If washing at home, hand wash cold with a mild detergent, turn inside out and dry in shade. Do not bleach or tumble dry.</p></Acc>
       </div>
 

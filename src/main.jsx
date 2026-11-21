@@ -5,7 +5,10 @@ import App from './App';
 import { CartProvider } from './cart';
 import { CatalogProvider } from './store';
 import { AuthProvider } from './auth';
+import { captureRef } from './lib/affiliate';
 import './styles.css';
+
+captureRef();
 
 document.documentElement.classList.add('js');
 

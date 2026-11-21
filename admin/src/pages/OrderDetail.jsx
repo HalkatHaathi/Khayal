@@ -23,11 +23,12 @@ export default function OrderDetail() {
     const o = await supabase.from('orders').select('*, order_items(*)').eq('id', id).maybeSingle().then(ok);
     if (!o) throw new Error('That order does not exist.');
     // shipments / shipment_events exist after migration 0008; before it the order page works as it did
-    const [sh, ev] = await Promise.all([
+    const [sh, ev, af] = await Promise.all([
       supabase.from('shipments').select('*').eq('order_id', id).maybeSingle(),
       supabase.from('shipment_events').select('at,activity,location').eq('order_id', id).order('at', { ascending: false }),
+      o.affiliate_id ? supabase.from('affiliates').select('id,name,code').eq('id', o.affiliate_id).maybeSingle() : null,
     ]);
-    return { ...o, shipment: sh.error ? null : sh.data, events: ev.error ? [] : ev.data };
+    return { ...o, shipment: sh.error ? null : sh.data, events: ev.error ? [] : ev.data, affiliate: af?.data || null };
   }, [id]);
   if (error) return <Failed error={error} retry={reload} />;
   if (loading || !data) return <PageHead title="Order" />;
@@ -193,6 +194,15 @@ function Detail({ o, reload }) {
               <div><dt>Account</dt><dd>{o.user_id ? 'Signed in at checkout' : 'Guest checkout'}</dd></div>
             </dl>
           </section>
+          {o.affiliate && (
+            <section className="grp">
+              <h2>Affiliate</h2>
+              <dl className="kv">
+                <div><dt>Referred by</dt><dd><Link to={`/affiliates/${o.affiliate.id}`} className="cell-link">{o.affiliate.name}</Link> <span className="kv__ref">{o.affiliate.code}</span></dd></div>
+                <div><dt>Commission</dt><dd className="tnum">{inr(o.affiliate_commission)}{o.payout_id && ' · paid'}</dd></div>
+              </dl>
+            </section>
+          )}
           <section className="grp">
             <h2>Deliver to</h2>
             <address className="addr">{addr}</address>
