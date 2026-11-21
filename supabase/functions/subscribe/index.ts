@@ -5,7 +5,7 @@
 // POST { email, name? }  ->  { ok: true, already?: true, emailed?: boolean }
 //
 // Secrets: RESEND_API_KEY (re_...), RESEND_FROM  e.g.  KHYAL <hello@khyal.store>   (the domain must be verified in Resend; until then use  KHYAL <onboarding@resend.dev>,
-//          which Resend only delivers to the account owner), optional RESEND_AUDIENCE_ID, optional SITE_URL (the shop link in the email).
+//          which Resend only delivers to the account owner), optional RESEND_REPLY_TO (where customers' replies go), optional RESEND_AUDIENCE_ID, optional SITE_URL (the shop link in the email).
 //          SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are provided by Supabase.
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
@@ -52,7 +52,7 @@ export async function handle(req, env, f = fetch) {
           if (!a.ok) console.error('resend audience', a.status, await a.text());
         }
         const m = welcome(name, env.SITE_URL || 'https://khyal.store');
-        const r = await rs('/emails', { from: env.RESEND_FROM, to: [email], ...m });
+        const r = await rs('/emails', { from: env.RESEND_FROM, to: [email], ...(env.RESEND_REPLY_TO ? { reply_to: env.RESEND_REPLY_TO } : {}), ...m }); // replies land in this inbox, e.g. a Gmail address now, hello@khyal.store after Google Workspace
         emailed = r.ok;
         if (!r.ok) console.error('resend email', r.status, await r.text());
       } catch (e) { console.error('resend', e.message); }

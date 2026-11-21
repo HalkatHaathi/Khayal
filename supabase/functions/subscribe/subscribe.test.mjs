@@ -46,6 +46,12 @@ test('without Resend configured the sign-up still works and nothing is sent', as
   const w = world(); const j = await (await post(w, { email: 'a@b.co' }, { ...ENV, RESEND_API_KEY: '' })).json();
   assert.deepEqual(j, { ok: true, emailed: false }); assert.equal(w.calls.filter((c) => c.u.includes('resend')).length, 0);
 });
+test('replies go to RESEND_REPLY_TO when it is set, and the field is absent when it is not', async () => {
+  const a = world(); await post(a, { email: 'a@b.co' }, { ...ENV, RESEND_REPLY_TO: 'owner@gmail.com' });
+  assert.equal(resend(a, '/emails')[0].body.reply_to, 'owner@gmail.com');
+  const b = world(); await post(b, { email: 'a@b.co' });
+  assert.equal('reply_to' in resend(b, '/emails')[0].body, false);
+});
 test('audience is optional', async () => {
   const w = world(); await post(w, { email: 'a@b.co' }, { ...ENV, RESEND_AUDIENCE_ID: undefined });
   assert.equal(resend(w, '/audiences/aud_1/contacts').length, 0); assert.equal(resend(w, '/emails').length, 1);
