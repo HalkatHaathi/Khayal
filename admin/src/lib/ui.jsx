@@ -12,6 +12,7 @@ export const Icon = {
   Stock: (p) => <I {...p}><path d="M4 7h16M4 12h16M4 17h10" /><path d="m17 16 2 2 3-4" /></I>,
   Grid: (p) => <I {...p}><rect x="4" y="4" width="7" height="7" /><rect x="13" y="4" width="7" height="7" /><rect x="4" y="13" width="7" height="7" /><rect x="13" y="13" width="7" height="7" /></I>,
   Plus: (p) => <I {...p} d="M12 5v14M5 12h14" />,
+  Minus: (p) => <I {...p} d="M5 12h14" />,
   Close: (p) => <I {...p} d="M6 6l12 12M18 6 6 18" />,
   Menu: (p) => <I {...p} d="M4 7h16M4 12h16M4 17h16" />,
   Search: (p) => <I {...p}><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></I>,

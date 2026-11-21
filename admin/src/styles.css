@@ -276,6 +276,21 @@ a.row:hover, button.row:hover { background: var(--wash); }
 .imgfield div { display: flex; gap: 8px; flex-wrap: wrap; }
 @media (max-width: 700px) { .lrow { grid-template-columns: 1fr; gap: 0; } .lrow .imgs__act { margin-top: 0; justify-content: flex-start; margin-bottom: 18px; } .block__body { padding-left: 0; } }
 
+/* ---------- photo cropper ---------- */
+.crop { font-size: 14px; font-weight: 400; letter-spacing: normal; text-transform: none; border: 0; padding: 26px 28px 24px; width: min(640px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow-y: auto; background: var(--paper); color: var(--ink); }
+.crop::backdrop { background: rgba(0,0,0,.55); }
+.crop__head { display: flex; justify-content: space-between; align-items: center; } .crop__head h2 { font-size: 20px; font-weight: 400; }
+.crop__hint { margin: 6px 0 18px; }
+.crop__stage { position: relative; overflow: hidden; margin: 0 auto; background: #111; cursor: grab; touch-action: none; outline-offset: 3px; user-select: none; }
+.crop__stage:active { cursor: grabbing; }
+.crop__stage img { position: absolute; left: 0; top: 0; max-width: none; transform-origin: 0 0; pointer-events: none; }
+.crop__zoom { display: flex; align-items: center; gap: 12px; max-width: 360px; margin: 18px auto 4px; color: var(--mute); } .crop__zoom input { flex: 1; accent-color: var(--ink); }
+.crop__shapes { display: flex; flex-wrap: wrap; justify-content: center; margin: 14px 0 22px; border: 1px solid var(--ink); width: fit-content; margin-left: auto; margin-right: auto; }
+.crop__shapes button { padding: 9px 14px; font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; transition: background .2s, color .2s; } .crop__shapes button + button { border-left: 1px solid var(--ink); }
+.crop__shapes button:hover { background: var(--wash); } .crop__shapes .is-on, .crop__shapes .is-on:hover { background: var(--ink); color: var(--paper); }
+.crop__act { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+@media (max-width: 560px) { .crop { padding: 18px 16px; } .crop__act .btn { flex: 1; padding-left: 10px; padding-right: 10px; } }
+
 /* ---------- photo layout picker + preview ---------- */
 .lay { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; margin: 4px 0 20px; }
 .lay__opt { display: flex; gap: 14px; align-items: center; text-align: left; padding: 12px 14px; border: 1px solid var(--line); color: var(--mute); transition: border-color .2s, color .2s, background .2s; }

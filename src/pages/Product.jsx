@@ -182,8 +182,8 @@ export default function Product({ onAdded, onCheckout }) {
             onPick={setSize} disabled={(s) => !p.inStock || !has(s)} onGuide={() => setGuide(true)} />
           {withPants && <SizeRow label="Pants Size" hint="Regular fit" values={WAIST} value={pants} onPick={setPants} />}
 
-          <p className={`avail ${!p.inStock ? 'is-out' : size && left <= 5 ? 'is-low' : ''}`} aria-live="polite">
-            {!p.inStock ? 'Sold out' : !size ? 'Select a size' : left <= 5 ? `Only ${left} left in ${size}, no restocking` : `Size ${size} available`}
+          <p className={`avail ${!p.inStock ? 'is-out' : size && left <= 5 && p.showStock !== false ? 'is-low' : ''}`} aria-live="polite">
+            {!p.inStock ? 'Sold out' : !size ? 'Select a size' : left <= 5 && p.showStock !== false ? `Only ${left} left in ${size}, no restocking` : `Size ${size} available`}
           </p>
 
           <div className="buy__cta">

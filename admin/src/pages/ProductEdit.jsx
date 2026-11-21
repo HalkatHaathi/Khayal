@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Failed, Icon, PageHead, SIZES, Switch, Thumb, WAIST, bySize, ok, slugify, useAsync, useToast } from '../lib/ui';
 
 const BUCKET = 'product-images';
-const BLANK = { name: '', slug: '', type: '', kind: 'tee', craft: '', description: '', price: '', compare_at: '', price_from: false, pants_addon: '', fit: 'Men', tone: '#cfc8bd', alt_tone: '#b9b2a6', is_active: false, gallery_layout: 'feature' };
+const BLANK = { name: '', slug: '', type: '', kind: 'tee', craft: '', description: '', price: '', compare_at: '', price_from: false, pants_addon: '', fit: 'Men', tone: '#cfc8bd', alt_tone: '#b9b2a6', is_active: false, gallery_layout: 'feature', show_stock: true };
 const STORE = import.meta.env.VITE_STORE_URL || 'http://localhost:5173';
 
 async function load(id) {
@@ -117,6 +117,7 @@ function Editor({ data, isNew }) {
         pants_addon: f.pants_addon === '' ? null : Number(f.pants_addon), tone: f.tone, alt_tone: f.alt_tone, fit: f.fit.trim() || 'Men', is_active: f.is_active,
       };
       if (f.gallery_layout !== 'feature' || (p && 'gallery_layout' in p)) row.gallery_layout = f.gallery_layout; // the column exists after migration 0011
+      if (!f.show_stock || (p && 'show_stock' in p)) row.show_stock = f.show_stock; // the column exists after migration 0012
       if (isNew) {
         const top = await supabase.from('products').select('sort').order('sort', { ascending: false }).limit(1).then(ok);
         row.sort = (top[0]?.sort ?? 0) + 1; // storefront shows the highest sort first
@@ -146,7 +147,7 @@ function Editor({ data, isNew }) {
       toast(isNew ? 'Product created' : 'Changes saved');
       if (isNew) nav(`/products/${pid}`, { replace: true }); else window.location.reload(); // reload re-reads everything so the saved state is what the database holds
     } catch (e) {
-      toast(e.code === '23505' ? 'Another product already uses that URL name.' : /gallery_layout/.test(e.message || '') ? 'Photo layouts need a database update: run supabase/migrations/0011_gallery_layout.sql, then save again.' : e.message || 'Could not save.', 'err');
+      toast(e.code === '23505' ? 'Another product already uses that URL name.' : /gallery_layout/.test(e.message || '') ? 'Photo layouts need a database update: run supabase/migrations/0011_gallery_layout.sql, then save again.' : /show_stock/.test(e.message || '') ? 'The stock-count switch needs a database update: run supabase/migrations/0012_show_stock.sql, then save again.' : e.message || 'Could not save.', 'err');
       setBusy(false);
     }
   };
@@ -256,6 +257,8 @@ function Editor({ data, isNew }) {
           <section className="grp">
             <h2>Visibility</h2>
             <div className="line"><span>{f.is_active ? 'Live on the store' : 'Hidden from the store'}</span><Switch on={f.is_active} onChange={(v) => setF({ ...f, is_active: v })} label="Live on the store" /></div>
+            <div className="line line--gap"><span>{f.show_stock ? 'Show how many are left' : 'Hide the stock count'}</span><Switch on={f.show_stock} onChange={(v) => setF({ ...f, show_stock: v })} label="Show remaining stock to customers" /></div>
+            <p className="hint">On: shoppers see “Only 3 left in M, no restocking” when a size runs low. Off: they only see whether a size is available or sold out.</p>
           </section>
 
           <section className="grp">

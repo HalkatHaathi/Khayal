@@ -8,14 +8,14 @@ const STORE = import.meta.env.VITE_STORE_URL || 'http://localhost:5173';
 
 // what each home-page block lets you edit. kind: text | area | link | image | collection | bool | items
 const SCHEMA = {
-  hero: { label: 'Hero (two photos)', fields: [['cta', 'Button text (both halves)', 'text'], ['image', 'Left photo', 'image', 'Each half is half the screen wide, tall portrait photos work best.'], ['label', 'Left title', 'text'], ['link', 'Left links to', 'link'], ['image2', 'Right photo', 'image'], ['label2', 'Right title', 'text'], ['link2', 'Right links to', 'link']] },
+  hero: { label: 'Hero (two photos)', fields: [['cta', 'Button text (both halves)', 'text'], ['image', 'Left photo', 'image', 'Each half is half the screen wide, tall portrait photos work best.', 8 / 9], ['label', 'Left title', 'text'], ['link', 'Left links to', 'link'], ['image2', 'Right photo', 'image', undefined, 8 / 9], ['label2', 'Right title', 'text'], ['link2', 'Right links to', 'link']] },
   products: { label: 'Product row', fields: [['collection', 'Collection', 'collection'], ['title', 'Title', 'text'], ['sub', 'Subtitle', 'text'], ['peek', 'Show a peek of the next product', 'bool'], ['upper', 'Title in capitals', 'bool']] },
-  banner: { label: 'Banner', fields: [['title', 'Title', 'text'], ['sub', 'Subtitle', 'text'], ['cta', 'Button text', 'text'], ['link', 'Links to', 'link'], ['image', 'Background photo', 'image', 'Moves slowly as visitors scroll (parallax) on computers. Wide photos work best.']] },
-  categories: { label: 'Category tiles', fields: [['items', 'Tiles', 'items', [['name', 'Name', 'text'], ['to', 'Links to', 'link'], ['image', 'Photo', 'image']], { name: 'New tile', to: '/', image: '', tone: '#cfc8bd' }]] },
-  fullscreen: { label: 'Full-screen photo', fields: [['title', 'Title', 'text'], ['text', 'Text', 'area'], ['cta', 'Button text (optional)', 'text'], ['link', 'Links to', 'link'], ['image', 'Photo', 'image', 'Fills the whole screen with the text in the middle.']] },
-  instagram: { label: 'Instagram grid', fields: [['title', 'Title', 'text'], ['link', 'Profile link', 'link'], ['items', 'Posts', 'items', [['image', 'Photo', 'image'], ['link', 'Post link (optional)', 'link']], { image: '', link: '', tone: '#cfc8bd' }]] },
-  story: { label: 'Story', fields: [['title', 'Title', 'text'], ['text', 'Text', 'area'], ['cta', 'Button text', 'text'], ['link', 'Links to', 'link'], ['image', 'Background photo', 'image']] },
-  newsletter: { label: 'Newsletter', fields: [['kicker', 'Small label', 'text'], ['title', 'Title', 'text'], ['text', 'Text', 'area'], ['image', 'Photo', 'image', 'Shown beside the sign-up form.']] },
+  banner: { label: 'Banner', fields: [['title', 'Title', 'text'], ['sub', 'Subtitle', 'text'], ['cta', 'Button text', 'text'], ['link', 'Links to', 'link'], ['image', 'Background photo', 'image', 'A dark layer is added over the photo so the white text stays readable. Crop it wide: it is cropped to the middle on phones.', 1905 / 667]] },
+  categories: { label: 'Category tiles', fields: [['items', 'Tiles', 'items', [['name', 'Name', 'text'], ['to', 'Links to', 'link'], ['image', 'Photo', 'image', undefined, 629 / 763]], { name: 'New tile', to: '/', image: '', tone: '#cfc8bd' }]] },
+  fullscreen: { label: 'Full-screen photo', fields: [['title', 'Title', 'text'], ['text', 'Text', 'area'], ['cta', 'Button text (optional)', 'text'], ['link', 'Links to', 'link'], ['image', 'Photo', 'image', 'Fills the whole screen with the text in the middle.', 16 / 9]] },
+  instagram: { label: 'Instagram grid', fields: [['title', 'Title', 'text'], ['link', 'Profile link', 'link'], ['items', 'Posts', 'items', [['image', 'Photo', 'image', undefined, 1], ['link', 'Post link (optional)', 'link']], { image: '', link: '', tone: '#cfc8bd' }]] },
+  story: { label: 'Story', fields: [['title', 'Title', 'text'], ['text', 'Text', 'area'], ['cta', 'Button text', 'text'], ['link', 'Links to', 'link'], ['image', 'Background photo', 'image', undefined, 1905 / 715]] },
+  newsletter: { label: 'Newsletter', fields: [['kicker', 'Small label', 'text'], ['title', 'Title', 'text'], ['text', 'Text', 'area'], ['image', 'Photo', 'image', 'Shown beside the sign-up form.', 4 / 3]] },
 };
 const NEW = {
   hero: { cta: 'Shop now', label: 'Left title', link: '/', image: '', label2: 'Right title', link2: '/', image2: '' },
@@ -113,7 +113,7 @@ function Fields({ fields, value, set, cols, links }) {
     if (kind === 'text') return <TextField key={k} label={label} value={v} onChange={(x) => set(k, x)} max={200} />;
     if (kind === 'area') return <TextField key={k} label={label} value={v} onChange={(x) => set(k, x)} area max={600} />;
     if (kind === 'link') return <LinkField key={k} label={label} value={v} onChange={(x) => set(k, x)} links={links} />;
-    if (kind === 'image') return <ImageField key={k} label={label} value={v} onChange={(x) => set(k, x)} hint={a} folder="home" />;
+    if (kind === 'image') return <ImageField key={k} label={label} value={v} onChange={(x) => set(k, x)} hint={a} ratio={b} folder="home" />;
     if (kind === 'bool') return <label key={k} className="chk"><input type="checkbox" checked={Boolean(v)} onChange={(e) => set(k, e.target.checked)} />{label}</label>;
     if (kind === 'collection') return (
       <label key={k} className="lbl">{label}

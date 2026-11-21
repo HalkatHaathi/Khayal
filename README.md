@@ -37,6 +37,7 @@ Run in this order in the Supabase SQL Editor (each file is safe to re-run), then
 | `supabase/migrations/0008_shipping.sql` | Shiprocket shipments, tracking events, `get_tracking()` for the order page, pickup-location setting |
 | `supabase/migrations/0009_tracking.sql` | `track_order()`: the public /track page (order number + mobile number) |
 | `supabase/migrations/0010_razorpay.sql` | Razorpay: payment columns, `apply_payment()` (what counts as paid), `get_order()` with hold time and refund state |
+| `supabase/migrations/0012_show_stock.sql` | Per-product switch: show the "Only 3 left" count on the storefront or hide it |
 | `supabase/migrations/0005_hardening.sql` | Size limits on user-written columns, locks the trigger function |
 | `supabase/seed.sql` | **Sample** catalogue, coupon `KHAYAL10`. Replaces the whole catalogue. Regenerate with `node scripts/gen-seed.mjs` |
 

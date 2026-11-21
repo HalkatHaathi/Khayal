@@ -60,9 +60,8 @@ img { display: block; max-width: 100%; }
 .has-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.45), transparent 55%); }
 .has-img { background-color: #222 !important; }
 /* parallax: the photo stays put while the block scrolls over it. Touch devices and reduced-motion get a plain photo. */
-.banner__bg.px { background-size: cover; background-position: center; background-attachment: fixed; }
-.banner:hover .banner__bg.px { transform: none; }
-@media (hover: none), (prefers-reduced-motion: reduce) { .banner__bg.px { background-attachment: scroll; } }
+.banner__bg.px { background-size: cover; background-position: center; }
+.banner__bg.has-img::after { background: rgba(0,0,0,.4); } /* whatever photo is uploaded, the banner text stays readable */
 .full { position: relative; min-height: 100vh; display: grid; place-items: center; text-align: center; color: var(--paper); overflow: hidden; margin-top: 60px; }
 .full__bg { position: absolute; inset: 0; background: radial-gradient(40% 55% at 30% 40%, #8a6a4a 0, transparent 70%), radial-gradient(40% 55% at 72% 60%, #5a4632 0, transparent 70%), linear-gradient(90deg, #2a2118, #4a3a2a 50%, #2a2118); }
 .full .has-img::after { background: rgba(0,0,0,.38); }

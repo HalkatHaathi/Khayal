@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { supabase } from './supabase';
 import { Icon, useToast } from './ui';
+import Cropper from './Cropper';
 
 export const okLink = (v) => !v || /^\/[^\s]*$/.test(v) || /^https?:\/\/[^\s]+$/i.test(v);
 export const uid = () => Math.random().toString(36).slice(2, 9);
@@ -16,16 +17,22 @@ export async function uploadImage(file, bucket, folder) {
   return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
 }
 
-/** Photo picker for site content. Empty = the storefront keeps its built-in colour block. */
-export function ImageField({ label, value, onChange, folder = 'site', hint }) {
+/** Photo picker for site content. Picking a file opens the cropper first, so the person decides what part of it is shown. Empty = the storefront keeps its built-in colour block. */
+export function ImageField({ label, value, onChange, folder = 'site', hint, ratio }) {
   const toast = useToast();
   const [busy, setBusy] = useState(false);
+  const [pending, setPending] = useState(null);
   const ref = useRef();
-  const pick = async (file) => {
-    if (!file) return;
-    setBusy(true);
+  const upload = async (file) => {
+    setPending(null); setBusy(true);
     try { onChange(await uploadImage(file, 'site-images', folder)); } catch (e) { toast(e.message, 'err'); }
-    setBusy(false); ref.current.value = '';
+    setBusy(false);
+  };
+  const pick = (file) => {
+    ref.current.value = '';
+    if (!file) return;
+    if (!/^image\/(jpeg|png|webp|avif)$/.test(file.type)) return toast('Use a JPG, PNG, WebP or AVIF image.', 'err');
+    setPending(file);
   };
   return (
     <div className="lbl">
@@ -39,6 +46,7 @@ export function ImageField({ label, value, onChange, folder = 'site', hint }) {
         <input ref={ref} type="file" hidden accept="image/jpeg,image/png,image/webp,image/avif" onChange={(e) => pick(e.target.files[0])} />
       </div>
       {hint && <small>{hint}</small>}
+      {pending && <Cropper file={pending} ratio={ratio} onDone={upload} onOriginal={() => upload(pending)} onCancel={() => setPending(null)} />}
     </div>
   );
 }
