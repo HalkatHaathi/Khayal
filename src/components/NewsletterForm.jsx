@@ -13,7 +13,11 @@ export default function NewsletterForm({ kicker = 'Newsletter', title = 'Sign up
     setErr('');
     if (!supabase) return setState('done'); // local dev without Supabase: nothing to save
     setState('busy');
-    const { error } = await supabase.from('newsletter_subscribers').insert({ email: v.email.trim().toLowerCase(), name: v.name.trim() || null });
+    const body = { email: v.email.trim().toLowerCase(), name: v.name.trim() };
+    // the `subscribe` function saves the address and sends the welcome email through Resend; if it is not deployed (or is down) sign-ups still work
+    const viaFn = await supabase.functions.invoke('subscribe', { body });
+    if (!viaFn.error) return setState('done');
+    const { error } = await supabase.from('newsletter_subscribers').insert({ email: body.email, name: body.name || null });
     // 23505 = already subscribed: say the same thing as a new signup so emails can't be probed
     setState(!error || error.code === '23505' ? 'done' : 'fail');
   };

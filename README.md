@@ -94,6 +94,16 @@ Set up (do it in **Test mode** first, nothing real moves):
 
 Going live: complete Razorpay's activation, generate **Live** keys, replace the three secrets (the webhook needs its own live-mode entry in the dashboard), redeploy nothing, and check the Settings page says LIVE. Refunds are in the admin order page (Cancel the order first so the stock returns, then Refund).
 
+## Resend (newsletter welcome email)
+
+The sign-up form on the home page calls the `subscribe` Edge Function (`supabase/functions/subscribe/index.ts`). It saves the address, adds it to a Resend audience (optional) and sends a welcome email. The email goes out only the first time an address signs up. If the function is not deployed or Resend is down, sign-ups still work (the form falls back to saving the address directly). Tests: `node --test supabase/functions/subscribe/subscribe.test.mjs`.
+
+1. Resend → **API Keys** → create a key (sending access). Resend → **Domains** → add `khyal.store`, add the DNS records it shows (they go in Cloudflare DNS, so the domain's nameservers must already point to Cloudflare) and press Verify. Until it is verified you can only test with `onboarding@resend.dev`, which delivers to your own Resend account email.
+2. Optional: Resend → **Audiences** → create one and copy its id, so every sign-up also appears there and you can send broadcasts from Resend.
+3. Supabase → Edge Functions → Secrets: `RESEND_API_KEY`, `RESEND_FROM` (for example `KHYAL <hello@khyal.store>`), optionally `RESEND_AUDIENCE_ID` and `SITE_URL`.
+4. Supabase → Edge Functions → deploy a function named **subscribe** with the code from `supabase/functions/subscribe/index.ts` and **Verify JWT off**.
+5. The same Resend key can also send Supabase's sign-up and password emails: Supabase → Project Settings → Authentication → SMTP → host `smtp.resend.com`, port `465`, user `resend`, password = the API key, sender = your verified address.
+
 ## Supabase dashboard settings to check before launch
 
 - Authentication → URL Configuration: Site URL = your domain; add `https://your-domain/**` and `http://localhost:5173/**` to Redirect URLs.

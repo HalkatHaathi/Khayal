@@ -143,7 +143,6 @@ img { display: block; max-width: 100%; }
 .banner__bg { position: absolute; inset: 0; background:
   radial-gradient(40% 70% at 50% 40%, #8c1a17 0, transparent 75%),
   linear-gradient(90deg, #4d0a09 0, #7d1412 35%, #7d1412 65%, #4d0a09 100%); transition: transform 1.2s var(--ease); }
-.banner:hover .banner__bg { transform: scale(1.03); }
 .banner__copy { position: absolute; left: 0; right: 0; bottom: 46px; display: grid; justify-items: center; gap: 10px; }
 .banner__copy h2 { font-size: 28px; font-weight: 400; }
 .banner__copy p { font-size: 15px; font-weight: 500; letter-spacing: .08em; margin-bottom: 8px; }
@@ -290,7 +289,7 @@ img { display: block; max-width: 100%; }
   .js .reveal { transform: none; transition: opacity .3s; }
   .panel.panel--left, .panel.panel--right, .panel.panel--top, .panel.panel--bottom { transform: none; opacity: 0; transition: opacity .2s, visibility 0s .2s; }
   .panel.is-open { opacity: 1; transition: opacity .2s; }
-  .banner:hover .banner__bg, .trio__item:hover .media, .logo__word, .logo__img { transform: none; }
+  .trio__item:hover .media, .logo__word, .logo__img { transform: none; }
   .card__add { transform: none; }
 }
 
