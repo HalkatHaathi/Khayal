@@ -21,7 +21,7 @@ import { useCatalog } from './store';
 import { useAuth } from './auth';
 import { supabase } from './lib/supabase';
 import Holding from './pages/Holding';
-import { allowed, isActive } from './holding';
+import { allowed, isActive, look } from './holding';
 
 export default function App() {
   const [open, setOpen] = useState(null); // 'menu' | 'search' | 'cart' | null
@@ -51,7 +51,7 @@ export default function App() {
 
   return (
     <>
-      <Header onMenu={() => setOpen('menu')} onSearch={() => setOpen('search')} onCart={() => setOpen('cart')} cartCount={count} holding={holding || preview} />
+      <Header onMenu={() => setOpen('menu')} onSearch={() => setOpen('search')} onCart={() => setOpen('cart')} cartCount={count} holding={holding || preview} fg={look(h).fg} />
       <div className={(pathname === '/' && (holding || heroFirst)) || preview ? '' : 'page-pad'}>
         {status === 'loading' && <main className="stub" aria-busy="true"><p>Loading…</p></main>}
         {status === 'error' && (

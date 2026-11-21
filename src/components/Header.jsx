@@ -13,7 +13,7 @@ export const Logo = () => (
   </>
 );
 
-export default function Header({ onMenu, onSearch, onCart, cartCount = 0, holding = false }) {
+export default function Header({ onMenu, onSearch, onCart, cartCount = 0, holding = false, fg }) {
   const { pathname } = useLocation();
   const { user } = useAuth();
   const { content } = useCatalog();
@@ -31,7 +31,7 @@ export default function Header({ onMenu, onSearch, onCart, cartCount = 0, holdin
   }, []);
 
   return (
-    <header className={`hdr ${overHero ? 'hdr--hero' : ''} ${scrolled ? 'hdr--scrolled' : ''} ${holding ? 'hdr--holding' : ''}`}>
+    <header className={`hdr ${overHero ? 'hdr--hero' : ''} ${scrolled ? 'hdr--scrolled' : ''} ${holding ? 'hdr--holding' : ''}`} style={holding && overHero && fg ? { color: fg } : undefined}>
       {showAnn && <div className="ann">{ann.link ? <A to={ann.link}>{ann.text}</A> : <span>{ann.text}</span>}</div>}
       <div className="hdr__bar">
         <div className="hdr__side">

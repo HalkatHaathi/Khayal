@@ -3,7 +3,7 @@ import { A } from '../content';
 import { useCatalog } from '../store';
 import { useSignup } from '../components/NewsletterForm';
 import { Facebook, Instagram, XIcon } from '../components/Icons';
-import { remaining } from '../holding';
+import { look, remaining } from '../holding';
 
 const pad = (n) => String(n).padStart(2, '0');
 
@@ -24,13 +24,15 @@ export default function Holding() {
   const { content } = useCatalog();
   const h = content.site.holding, { social } = content.site;
   const { err, state, submit } = useSignup();
+  const l = look(h);
   const [email, setEmail] = useState('');
   useEffect(() => { document.title = 'KHYAL'; }, []);
 
   return (
-    <main className="hold">
+    <main className={`hold ${l.cls}`} style={l.vars}>
       <div className={`hold__bg ${h.image ? 'has-img' : ''}`}>{h.image && <img className="bg-img" src={h.image} alt="" />}</div>
       <div className="hold__copy">
+        {h.showLogo && <img className="hold__logo" src="/logo.webp" alt="" width="88" height="88" />}
         <h1>{h.title}</h1>
         {h.text && <p className="hold__text">{h.text}</p>}
         {h.countdown && h.date && <Countdown date={h.date} />}

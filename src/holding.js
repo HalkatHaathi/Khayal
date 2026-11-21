@@ -17,3 +17,25 @@ export function remaining(date, now = Date.now()) {
   const s = Math.floor((t - now) / 1000);
   return { d: Math.floor(s / 86400), h: Math.floor(s % 86400 / 3600), m: Math.floor(s % 3600 / 60), s: s % 60 };
 }
+
+const hex = (v, d) => (/^#[0-9a-f]{6}$/i.test(v) ? v : d);
+/** "#rrggbb" + a 0-100 strength -> rgba(...). */
+export function rgba(color, pct) {
+  const n = parseInt(color.slice(1), 16), a = Math.min(100, Math.max(0, Number(pct) || 0)) / 100;
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+}
+/**
+ * The admin's look settings turned into CSS variables and layout classes. Anything invalid (a bad colour, an unknown option,
+ * a strength outside 0-100) falls back to the built-in look, so a half-edited setting can never produce an unreadable page.
+ */
+export function look(h = {}) {
+  const pick = (v, list, d) => (list.includes(v) ? v : d);
+  return {
+    vars: {
+      '--hold-bg': hex(h.bg, '#202020'), '--hold-fg': hex(h.fg, '#ffffff'), '--hold-ov': rgba(hex(h.overlay, '#000000'), h.overlayOpacity ?? 55),
+      '--hold-btn-bg': hex(h.btnBg, '#ffffff'), '--hold-btn-fg': hex(h.btnFg, '#111111'),
+    },
+    cls: `hold--${pick(h.align, ['left', 'center'], 'center')} hold--v-${pick(h.valign, ['top', 'middle', 'bottom'], 'middle')} hold--${pick(h.titleSize, ['s', 'm', 'l'], 'm')}`,
+    fg: hex(h.fg, '#ffffff'),
+  };
+}
