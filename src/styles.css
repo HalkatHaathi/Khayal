@@ -45,8 +45,8 @@ img { display: block; max-width: 100%; }
 .hdr--scrolled .logo__word { opacity: 0; transform: translateY(-6px); }
 .hdr--scrolled .logo__img { opacity: 1; transform: none; }
 .hdr--hero .logo__word { text-shadow: 0 1px 14px rgba(0,0,0,.25); }
-.hdr__nav { height: var(--nav); display: grid; grid-template-columns: repeat(5, 165px); justify-content: center; align-items: start; overflow: hidden; transition: height .3s var(--ease), opacity .2s; }
-.hdr__nav a { text-align: center; font-size: 11px; font-weight: 500; letter-spacing: .02em; text-transform: uppercase; padding: 9px 0; }
+.hdr__nav { height: var(--nav); display: flex; justify-content: center; align-items: flex-start; gap: clamp(22px, 3.6vw, 72px); padding: 0 var(--pad); overflow: hidden; transition: height .3s var(--ease), opacity .2s; } /* one link sits in the middle; more links spread out evenly around it */
+.hdr__nav a { white-space: nowrap; text-align: center; font-size: 11px; font-weight: 500; letter-spacing: .02em; text-transform: uppercase; padding: 9px 0; }
 .hdr__nav a:hover { text-decoration: underline; text-underline-offset: 4px; }
 .hdr--scrolled .hdr__nav { height: 0; opacity: 0; }
 .page-pad .hdr__nav, .hdr:not(.hdr--hero):not(.hdr--scrolled) .hdr__nav { border-bottom: 1px solid var(--line); }
