@@ -23,11 +23,12 @@ import Navigation from './pages/Navigation';
 import ContentPages from './pages/ContentPages';
 import PageEdit from './pages/PageEdit';
 import Site from './pages/Site';
+import Emails from './pages/Emails';
 
 const NAV = [
   ['Sales', [['/', 'Overview', Icon.Overview, true], ['/orders', 'Orders', Icon.Bag], ['/shipments', 'Shipments', Icon.Truck], ['/customers', 'Customers', Icon.People]]],
   ['Catalogue', [['/products', 'Products', Icon.Box], ['/inventory', 'Inventory', Icon.Stock], ['/collections', 'Collections', Icon.Grid]]],
-  ['Marketing', [['/discounts', 'Discounts', Icon.Tag], ['/messages', 'Messages', Icon.Mail], ['/subscribers', 'Subscribers', Icon.People]]],
+  ['Marketing', [['/discounts', 'Discounts', Icon.Tag], ['/messages', 'Messages', Icon.Mail], ['/emails', 'Emails', Icon.Doc], ['/subscribers', 'Subscribers', Icon.People]]],
   ['Storefront', [['/home', 'Home page', Icon.Home], ['/navigation', 'Navigation', Icon.Menu], ['/pages', 'Pages', Icon.Doc], ['/site', 'Site', Icon.Globe]]],
   ['Store', [['/settings', 'Settings', Icon.Cog]]],
 ];
@@ -85,6 +86,7 @@ function Shell() {
             <Route path="/pages" element={<ContentPages />} />
             <Route path="/pages/:slug" element={<PageEdit />} />
             <Route path="/site" element={<Site />} />
+            <Route path="/emails" element={<Emails />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>

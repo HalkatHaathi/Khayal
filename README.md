@@ -38,6 +38,7 @@ Run in this order in the Supabase SQL Editor (each file is safe to re-run), then
 | `supabase/migrations/0009_tracking.sql` | `track_order()`: the public /track page (order number + mobile number) |
 | `supabase/migrations/0010_razorpay.sql` | Razorpay: payment columns, `apply_payment()` (what counts as paid), `get_order()` with hold time and refund state |
 | `supabase/migrations/0012_show_stock.sql` | Per-product switch: show the "Only 3 left" count on the storefront or hide it |
+| `supabase/migrations/0013_emails.sql` | Lets the admin save email templates (`site_content` key `emails`) |
 | `supabase/migrations/0005_hardening.sql` | Size limits on user-written columns, locks the trigger function |
 | `supabase/seed.sql` | **Sample** catalogue, coupon `KHAYAL10`. Replaces the whole catalogue. Regenerate with `node scripts/gen-seed.mjs` |
 
@@ -96,7 +97,7 @@ Going live: complete Razorpay's activation, generate **Live** keys, replace the 
 
 ## Resend (newsletter welcome email)
 
-The sign-up form on the home page calls the `subscribe` Edge Function (`supabase/functions/subscribe/index.ts`). It saves the address, adds it to a Resend audience (optional) and sends a welcome email. The email goes out only the first time an address signs up. If the function is not deployed or Resend is down, sign-ups still work (the form falls back to saving the address directly). Tests: `node --test supabase/functions/subscribe/subscribe.test.mjs`.
+The sign-up form on the home page calls the `subscribe` Edge Function (`supabase/functions/subscribe/index.ts`). It saves the address, adds it to a Resend audience (optional) and sends a welcome email. **The email's subject, wording and layout are edited in the admin (Emails page)**, with a live preview and a "send me a test" button; run `supabase/migrations/0013_emails.sql` first so the page can save. The renderer exists twice (the function and `admin/src/lib/emailHtml.js`, for the preview); the test suite fails if they differ, so after changing it copy the marked block across. The email goes out only the first time an address signs up. If the function is not deployed or Resend is down, sign-ups still work (the form falls back to saving the address directly). Tests: `node --test supabase/functions/subscribe/subscribe.test.mjs`.
 
 1. Resend → **API Keys** → create a key (sending access). Resend → **Domains** → add `khyal.store`, add the DNS records it shows (at GoDaddy or wherever the domain's DNS is managed today; email records don't need Cloudflare) and press Verify. Until it is verified you can only test with `onboarding@resend.dev`, which delivers to your own Resend account email.
 2. Optional: Resend → **Audiences** → create one and copy its id, so every sign-up also appears there and you can send broadcasts from Resend.
